@@ -19,7 +19,9 @@ const getClientCredentialsToken = async () => {
 getClientCredentialsToken().then(data => clientCredsToken = data.access_token);
 
 const getArtist = async artistId => {
+    console.log('inside getArtist');
     const response = await getClientCredentialsToken().then(data => {
+        console.log(`got a response: ${response}`);
         fetch(`https://api.spotify.com/v1/artists/${artistId}`, {
             headers: {
                 'Authorization': 'Bearer ' + data.access_token

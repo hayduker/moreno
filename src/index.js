@@ -1,5 +1,5 @@
 import { drawGraph, updateGraph } from './graph'
-import { searchArtists, getRelatedArtists, artistsFound } from './requests'
+import { searchArtists, getRelatedArtists, artistsFound, getArtist } from './requests'
 
 const artistSearchElem = document.getElementById('artist-search');
 const selectedArtistsElem = document.querySelector('.selected-artists');
@@ -69,6 +69,11 @@ function autocomplete(inputElem) {
                 dropdownItem.addEventListener('click', function () {
                     inputElem.value = '';
                     if (!selectedArtists.find(artistInArr => artistInArr.id === artist.id)) {
+                        getArtist(artist.id).then(data => {
+                            console.log('artist data');
+                            console.log(data);
+                        })
+
                         selectedArtists.push({
                             name: artist.name,
                             id: artist.id
@@ -79,22 +84,23 @@ function autocomplete(inputElem) {
 
                         selectedArtistsInfo.nodes.push({
                             id: artist.name,
+                            uuid: artist.id,
                             group: 1
                         })
 
                         getRelatedArtists(artist.id).then(data => {
-                            console.log('getting related artists');
                             data.artists.forEach((relatedArtist, index) => {
-                                console.log('processing related artist');
                                 selectedArtistsInfo.nodes.push({
                                     id: relatedArtist.name,
+                                    popularity: relatedArtist.popularity,
+                                    uuid: relatedArtist.id,
                                     group: 1
-                                })
+                                });
                                 selectedArtistsInfo.links.push({
                                     source: artist.name,
                                     target: relatedArtist.name,
                                     value: index + 1
-                                })
+                                });
                             })
 
                             updateGraph(selectedArtistsInfo);
@@ -127,7 +133,7 @@ function autocomplete(inputElem) {
         }
     });
     function addActive(listElems) {
-        if (!listElems) return false;
+        if (listElems.length === 0) return false;
         removeActive(listElems);
         if (currentFocus >= listElems.length) currentFocus = 0;
         if (currentFocus < 0) currentFocus = (listElems.length - 1);
@@ -155,3 +161,5 @@ function autocomplete(inputElem) {
 drawGraph();
 
 document.querySelector('#button').addEventListener('click', updateGraph);
+
+export { selectedArtistsInfo }
