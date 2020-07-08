@@ -106,7 +106,7 @@ function myGraph() {
             .attr("r", d => Math.sqrt(d.popularity))
             .attr("id", d => "Node;" + d.id)
             .attr("class", "nodeStrokeClass")
-            .attr("fill", 'blue')
+            .attr("fill", '#aaa')
             .on('dblclick', dblclick);
 
         nodeEnter.append("svg:text")

@@ -19,49 +19,42 @@ const getClientCredentialsToken = async () => {
 getClientCredentialsToken().then(data => clientCredsToken = data.access_token);
 
 const getArtist = async artistId => {
-    console.log('inside getArtist');
-    const response = await getClientCredentialsToken().then(data => {
-        console.log(`got a response: ${response}`);
-        fetch(`https://api.spotify.com/v1/artists/${artistId}`, {
-            headers: {
-                'Authorization': 'Bearer ' + data.access_token
-            }
-        })
+    const response = await fetch(`https://api.spotify.com/v1/artists/${artistId}`, {
+        headers: {
+            'Authorization': 'Bearer ' + clientCredsToken
+        }
     });
 
     return response.json();
-}
+};
 
 const getRelatedArtists = async artistId => {
     const response = await fetch(`https://api.spotify.com/v1/artists/${artistId}/related-artists`, {
         headers: {
             'Authorization': 'Bearer ' + clientCredsToken
         }
-    })
+    });
 
     return response.json();
-}
+};
 
-let artistsFound = [];
-
-const searchArtists = query => {
-    getClientCredentialsToken().then(data => {
-        const encodedQuery = encodeURIComponent(query.trim());
-        fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=artist`, {
-            headers: {
-                'Authorization': 'Bearer ' + data.access_token
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.artists) artistsFound = data.artists.items.map(artist => {
-                    return {
-                        name: artist.name,
-                        id: artist.id
-                    }
-                });
-            });
+const searchArtists = async query => {
+    const encodedQuery = encodeURIComponent(query.trim());
+    const response = await fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=artist`, {
+        headers: {
+            'Authorization': 'Bearer ' + clientCredsToken
+        }
     });
-}
 
-export { getArtist, getRelatedArtists, searchArtists, artistsFound }
+    const data = await response.json();
+    let artistsFound = [];
+    if (data.artists) return artistsFound = data.artists.items.map(artist => {
+            return {
+                name: artist.name,
+                id: artist.id
+            }
+        });
+    return artistsFound;
+};
+
+export { getArtist, getRelatedArtists, searchArtists }

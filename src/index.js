@@ -1,5 +1,5 @@
 import { drawGraph, updateGraph } from './graph'
-import { searchArtists, getRelatedArtists, artistsFound, getArtist } from './requests'
+import { searchArtists, getRelatedArtists, getArtist } from './requests'
 
 const artistSearchElem = document.getElementById('artist-search');
 const selectedArtistsElem = document.querySelector('.selected-artists');
@@ -10,8 +10,6 @@ const selectedArtistsInfo = {
     nodes: [],
     links: []
 };
-
-artistSearchElem.addEventListener('input', e => searchArtists(e.target.value));
 
 function displaySelectedArtists() {
     selectedArtistsElem.innerHTML = '';
@@ -43,75 +41,83 @@ function saveSelectedArtists() {
 
 autocomplete(document.getElementById('artist-search'));
 
+function addRelatedArtistsToGraphData (sourceArtist, relatedArtists) {
+    relatedArtists.forEach((relatedArtist, index) => {
+        selectedArtistsInfo.nodes.push({
+            id: relatedArtist.name,
+            popularity: relatedArtist.popularity,
+            uuid: relatedArtist.id,
+            group: 1
+        });
+        selectedArtistsInfo.links.push({
+            source: sourceArtist.name,
+            target: relatedArtist.name,
+            value: index + 1
+        });
+    });
+};
+
+function addArtistToGraphData (sourceArtist) {
+    if (!selectedArtists.find(artistInArr => artistInArr.id === sourceArtist.id)) {
+        getArtist(sourceArtist.id).then(data => {
+            selectedArtists.push({
+                name: sourceArtist.name,
+                id: sourceArtist.id,
+            });
+
+            selectedArtistsInfo.nodes.push({
+                id: sourceArtist.name,
+                popularity: data.popularity,
+                uuid: sourceArtist.id,
+                group: 1
+            });
+        });
+
+        displaySelectedArtists();
+        saveSelectedArtists();
+
+        getRelatedArtists(sourceArtist.id).then(data => {
+            const relatedArtists = data.artists.splice(0, 6);
+            addRelatedArtistsToGraphData(sourceArtist, relatedArtists)
+            updateGraph(selectedArtistsInfo);
+        });
+    }
+}
+
 function autocomplete(inputElem) {
     let currentFocus;
     /*execute a function when someone writes in the text field:*/
-    inputElem.addEventListener('input', function (e) {
-        const searchQuery = this.value;
-        closeAllLists();
-        if (!searchQuery) { return false; }
-        currentFocus = -1;
-        /*create a DIV element that will contain the items (values):*/
-        const dropdownContainer = document.createElement('div');
-        dropdownContainer.setAttribute('id', this.id + 'autocomplete-list');
-        dropdownContainer.setAttribute('class', 'autocomplete-items');
-        /*append the DIV element as a child of the autocomplete container:*/
-        this.parentNode.appendChild(dropdownContainer);
-
-        artistsFound.forEach(artist => {
-            // check if the item starts with the same letters as the text field value
-            if (artist.name.substr(0, searchQuery.length).toUpperCase() == searchQuery.toUpperCase()) {
-                const dropdownItem = document.createElement('div');
-                dropdownItem.innerHTML = '<strong>' + artist.name.substr(0, searchQuery.length) + '</strong>';
-                dropdownItem.innerHTML += artist.name.substr(searchQuery.length);
-                dropdownItem.innerHTML += '<input type="hidden" value="' + artist.name + '">';
-
-                dropdownItem.addEventListener('click', function () {
-                    inputElem.value = '';
-                    if (!selectedArtists.find(artistInArr => artistInArr.id === artist.id)) {
-                        getArtist(artist.id).then(data => {
-                            console.log('artist data');
-                            console.log(data);
-                        })
-
-                        selectedArtists.push({
-                            name: artist.name,
-                            id: artist.id
-                        })
-
-                        displaySelectedArtists();
-                        saveSelectedArtists();
-
-                        selectedArtistsInfo.nodes.push({
-                            id: artist.name,
-                            uuid: artist.id,
-                            group: 1
-                        })
-
-                        getRelatedArtists(artist.id).then(data => {
-                            data.artists.forEach((relatedArtist, index) => {
-                                selectedArtistsInfo.nodes.push({
-                                    id: relatedArtist.name,
-                                    popularity: relatedArtist.popularity,
-                                    uuid: relatedArtist.id,
-                                    group: 1
-                                });
-                                selectedArtistsInfo.links.push({
-                                    source: artist.name,
-                                    target: relatedArtist.name,
-                                    value: index + 1
-                                });
-                            })
-
-                            updateGraph(selectedArtistsInfo);
-                        });
-                    }
-
-                    closeAllLists();
-                });
-
-                dropdownContainer.appendChild(dropdownItem);
-            }
+    inputElem.addEventListener('input', e => {
+        const searchQuery = e.target.value;
+        searchArtists(searchQuery).then(artistsFound => {
+            closeAllLists();
+            if (!searchQuery) { return false; }
+            currentFocus = -1;
+            /*create a DIV element that will contain the items (values):*/
+            const dropdownContainer = document.createElement('div');
+            dropdownContainer.setAttribute('id', e.target.id + 'autocomplete-list');
+            dropdownContainer.setAttribute('class', 'autocomplete-items');
+            /*append the DIV element as a child of the autocomplete container:*/
+            e.target.parentNode.appendChild(dropdownContainer);
+    
+            const maxDropdownSize = 10;
+            artistsFound.splice(0, maxDropdownSize).forEach(artist => {
+                // check if the item starts with the same letters as the text field value
+                if (artist.name.substr(0, searchQuery.length).toUpperCase() == searchQuery.toUpperCase()) {
+                    const dropdownItem = document.createElement('div');
+                    dropdownItem.innerHTML = '<strong>' + artist.name.substr(0, searchQuery.length) + '</strong>';
+                    dropdownItem.innerHTML += artist.name.substr(searchQuery.length);
+                    dropdownItem.innerHTML += '<input type="hidden" value="' + artist.name + '">';
+    
+                    dropdownItem.addEventListener('click', () => {
+                        inputElem.value = '';
+                        addArtistToGraphData(artist);
+                        closeAllLists();
+                    });
+    
+                    dropdownContainer.appendChild(dropdownItem);
+                }
+            })
         })
     });
     // Enable navigating dropdown with keyboard
@@ -119,10 +125,10 @@ function autocomplete(inputElem) {
         let listElems;
         const list = document.getElementById(this.id + 'autocomplete-list');
         if (list) listElems = list.getElementsByTagName('div');
-        if (e.keyCode == 40) { // DOWN arrow
+        if (e.keyCode == 40) { // DOWN
             currentFocus++;
             addActive(listElems);
-        } else if (e.keyCode == 38) { // UP arrow
+        } else if (e.keyCode == 38) { // UP
             currentFocus--;
             addActive(listElems);
         } else if (e.keyCode == 13) { // ENTER
@@ -159,7 +165,5 @@ function autocomplete(inputElem) {
 }
 
 drawGraph();
-
-document.querySelector('#button').addEventListener('click', updateGraph);
 
 export { selectedArtistsInfo }
