@@ -57,31 +57,30 @@ function addRelatedArtistsToGraphData (sourceArtist, relatedArtists) {
     });
 };
 
+function addArtistToSelected (sourceArtist) {
+    selectedArtists.push({
+        name: sourceArtist.name,
+        id: sourceArtist.id,
+    });
+
+    displaySelectedArtists();
+}
+
 function addArtistToGraphData (sourceArtist) {
-    if (!selectedArtists.find(artistInArr => artistInArr.id === sourceArtist.id)) {
-        getArtist(sourceArtist.id).then(data => {
-            selectedArtists.push({
-                name: sourceArtist.name,
-                id: sourceArtist.id,
-            });
-
-            selectedArtistsInfo.nodes.push({
-                id: sourceArtist.name,
-                popularity: data.popularity,
-                uuid: sourceArtist.id,
-                group: 1
-            });
+    getArtist(sourceArtist.id).then(data => {
+        selectedArtistsInfo.nodes.push({
+            id: sourceArtist.name,
+            popularity: data.popularity,
+            uuid: sourceArtist.id,
+            group: 1
         });
+    });
 
-        displaySelectedArtists();
-        saveSelectedArtists();
-
-        getRelatedArtists(sourceArtist.id).then(data => {
-            const relatedArtists = data.artists.splice(0, 6);
-            addRelatedArtistsToGraphData(sourceArtist, relatedArtists)
-            updateGraph(selectedArtistsInfo);
-        });
-    }
+    getRelatedArtists(sourceArtist.id).then(data => {
+        const relatedArtists = data.artists.splice(0, 6);
+        addRelatedArtistsToGraphData(sourceArtist, relatedArtists)
+        updateGraph(selectedArtistsInfo);
+    });
 }
 
 function autocomplete(inputElem) {
@@ -111,7 +110,12 @@ function autocomplete(inputElem) {
     
                     dropdownItem.addEventListener('click', () => {
                         inputElem.value = '';
-                        addArtistToGraphData(artist);
+                        if (!selectedArtists.find(artistinArr => artistinArr.id === sourceArtist.id)) {
+                            console.log(artist)
+                            addArtistToSelected(artist);
+                            addArtistToGraphData(artist);
+                        }
+                        saveSelectedArtists();
                         closeAllLists();
                     });
     
@@ -166,4 +170,4 @@ function autocomplete(inputElem) {
 
 drawGraph();
 
-export { selectedArtistsInfo }
+export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected }

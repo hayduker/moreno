@@ -1,5 +1,5 @@
 import { getRelatedArtists } from './requests'
-import { selectedArtistsInfo } from './index'
+import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected } from './index'
 
 var graph;
 
@@ -119,6 +119,9 @@ function myGraph() {
 
         force.on("tick", () => {
             node.attr("transform", d => "translate(" + d.x + "," + d.y + ")");
+            //node
+            // .attr("cx", function(d) { return d.x = Math.max(d.r, Math.min(width - d.r, d.x)); })
+            // .attr("cy", function(d) { return d.y = Math.max(d.r, Math.min(height - d.r, d.y)); });
 
             link.attr("x1", d => d.source.x)
                 .attr("y1", d => d.source.y)
@@ -137,11 +140,10 @@ function myGraph() {
 
 
     function dblclick(d) {
-        console.log('clicked!');
-        console.log(d);
-
+        console.log(d)
+        addArtistToSelected(d);
         getRelatedArtists(d.uuid).then(data => {
-            data.artists.forEach((relatedArtist, index) => {
+            data.artists.splice(0, 6).forEach((relatedArtist, index) => {
                 selectedArtistsInfo.nodes.push({
                     id: relatedArtist.name,
                     popularity: relatedArtist.popularity,
@@ -149,7 +151,7 @@ function myGraph() {
                     group: 1
                 });
                 selectedArtistsInfo.links.push({
-                    source: d.idbr3a,
+                    source: d.id,
                     target: relatedArtist.name,
                     value: index + 1
                 });
