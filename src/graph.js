@@ -1,5 +1,5 @@
 import { getRelatedArtists } from './requests'
-import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected } from './index'
+import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, artistInfoImg, artistInfoAudio } from './index'
 
 var graph;
 
@@ -10,26 +10,26 @@ const svg = d3.select('svg'),
 function myGraph() {
     // Add and remove elements on the graph object
     this.addNode = node => {
-        nodes.push({ 'id': node.id, 'popularity': node.popularity, 'uuid': node.uuid });
+        nodes.push({ 'name': node.name, 'popularity': node.popularity, 'uuid': node.uuid, 'image': node.image, 'audio': node.audio });
         update();
     };
 
-    this.removeNode = function (id) {
+    this.removeNode = function (name) {
         var i = 0;
-        var n = findNode(id);
+        var n = findNode(name);
         while (i < links.length) {
             if ((links[i]['source'] == n) || (links[i]['target'] == n)) {
                 links.splice(i, 1);
             }
             else i++;
         }
-        nodes.splice(findNodeIndex(id), 1);
+        nodes.splice(findNodeIndex(name), 1);
         update();
     };
 
     this.removeLink = function (source, target) {
         for (var i = 0; i < links.length; i++) {
-            if (links[i].source.id == source && links[i].target.id == target) {
+            if (links[i].source.name == source && links[i].target.name == target) {
                 links.splice(i, 1);
                 break;
             }
@@ -52,16 +52,16 @@ function myGraph() {
         update();
     };
 
-    var findNode = function (id) {
+    var findNode = function (name) {
         for (var i in nodes) {
-            if (nodes[i]["id"] === id) return nodes[i];
+            if (nodes[i]["name"] === name) return nodes[i];
         }
         ;
     };
 
-    var findNodeIndex = function (id) {
+    var findNodeIndex = function (name) {
         for (var i = 0; i < nodes.length; i++) {
-            if (nodes[i].id == id) {
+            if (nodes[i].name == name) {
                 return i;
             }
         }
@@ -82,10 +82,10 @@ function myGraph() {
 
     var update = function () {
         var link = vis.selectAll("line")
-            .data(links, d => d.source.id + "-" + d.target.id);
+            .data(links, d => d.source.name + "-" + d.target.name);
 
         link.enter().append("line")
-            .attr("id", d => d.source.id + "-" + d.target.id)
+            .attr("name", d => d.source.name + "-" + d.target.name)
             .attr("stroke-width", 2)
             .attr("stroke", "#aaa")
             .attr("class", "link");
@@ -96,7 +96,7 @@ function myGraph() {
         link.exit().remove();
 
         var node = vis.selectAll("g.node")
-            .data(nodes, d => d.id);
+            .data(nodes, d => d.name);
 
         var nodeEnter = node.enter().append("g")
             .attr("class", "node")
@@ -104,22 +104,28 @@ function myGraph() {
 
         nodeEnter.append("svg:circle")
             .attr("r", d => Math.sqrt(d.popularity))
-            .attr("id", d => "Node;" + d.id)
+            .attr("name", d => "Node;" + d.name)
             .attr("class", "nodeStrokeClass")
             .attr("fill", '#aaa')
-            .on('dblclick', dblclick);
+            .on('dblclick', dblclick)
+            .on('click', click);
 
         nodeEnter.append("svg:text")
             .attr("class", "textClass")
             .attr("x", 14)
             .attr("y", ".31em")
-            .text(d => d.id);
+            .text(d => d.name);
 
         node.exit().remove();
 
-        force.on("tick", () => {
+        force.on("tick", (e) => {
             node.attr("transform", d => "translate(" + d.x + "," + d.y + ")");
-            //node
+
+            // nodes.forEach(function(d) {
+            //     d.y += (height/2 - d.y) * e.alpha;
+            //     d.x += (height/2 - d.x) * e.alpha;
+            //   });
+            // node
             // .attr("cx", function(d) { return d.x = Math.max(d.r, Math.min(width - d.r, d.x)); })
             // .attr("cy", function(d) { return d.y = Math.max(d.r, Math.min(height - d.r, d.y)); });
 
@@ -131,27 +137,32 @@ function myGraph() {
 
         // Restart the force layout.
         force
-            .gravity(0.8)
+            .gravity(5.0)
             .charge(-3000)
             .linkDistance(d => d.value * 5)
-            .size([width, height])
+            .size([width/2, height/2])
             .start();
     };
 
+    function click(d) {
+        artistInfoName.innerText = d.name;
+        artistInfoImg.src = d.image;
+        artistInfoAudio.src = d.audio;
+    }
 
     function dblclick(d) {
-        console.log(d)
         addArtistToSelected(d);
         getRelatedArtists(d.uuid).then(data => {
-            data.artists.splice(0, 6).forEach((relatedArtist, index) => {
+            data.artists.splice(0, maxNumRelated).forEach((relatedArtist, index) => {
                 selectedArtistsInfo.nodes.push({
-                    id: relatedArtist.name,
+                    name: relatedArtist.name,
                     popularity: relatedArtist.popularity,
                     uuid: relatedArtist.id,
+                    image: relatedArtist.images[0].url,
                     group: 1
                 });
                 selectedArtistsInfo.links.push({
-                    source: d.id,
+                    source: d.name,
                     target: relatedArtist.name,
                     value: index + 1
                 });
@@ -184,4 +195,4 @@ function keepNodesOnTop() {
     });
 }
 
-export { drawGraph, updateGraph }
+export { drawGraph, updateGraph, graph }

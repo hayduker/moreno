@@ -38,6 +38,16 @@ const getRelatedArtists = async artistId => {
     return response.json();
 };
 
+const getTopTrack = async artistId => {
+    const response = await fetch(`https://api.spotify.com/v1/artists/${artistId}/top-tracks?country=US`, {
+        headers: {
+            'Authorization': 'Bearer ' + clientCredsToken
+        }
+    });
+
+    return response.json();
+}
+
 const searchArtists = async query => {
     const encodedQuery = encodeURIComponent(query.trim());
     const response = await fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=artist`, {
@@ -57,4 +67,4 @@ const searchArtists = async query => {
     return artistsFound;
 };
 
-export { getArtist, getRelatedArtists, searchArtists }
+export { getArtist, getRelatedArtists, searchArtists, getTopTrack }

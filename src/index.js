@@ -1,8 +1,14 @@
-import { drawGraph, updateGraph } from './graph'
-import { searchArtists, getRelatedArtists, getArtist } from './requests'
+import { drawGraph, updateGraph, graph } from './graph'
+import { searchArtists, getRelatedArtists, getArtist, getTopTrack } from './requests'
 
 const artistSearchElem = document.getElementById('artist-search');
 const selectedArtistsElem = document.querySelector('.selected-artists');
+
+const artistInfoName = document.querySelector('.artist-info-name');
+const artistInfoImg = document.querySelector('.artist-info-img');
+const artistInfoAudio = document.querySelector('.artist-info-audio');
+
+// const relatedSlider = document.querySelector('.related-slider');
 
 const selectedArtists = []; // JSON.parse(localStorage.getItem('selected-artists')) || [];
 
@@ -10,6 +16,8 @@ const selectedArtistsInfo = {
     nodes: [],
     links: []
 };
+
+let maxNumRelated = 6; // relatedSlider.value;
 
 function displaySelectedArtists() {
     selectedArtistsElem.innerHTML = '';
@@ -25,6 +33,17 @@ function displaySelectedArtists() {
         const deleteBtn = document.createElement('button');
         deleteBtn.innerHTML = '<i class="fas fa-times remove-artist"></i>';
         deleteBtn.addEventListener('click', () => {
+            selectedArtistsInfo.links = selectedArtistsInfo.links.filter(link => {
+                if (link.source === artist.name) {
+                    graph.removeLink(link.source, link.target);
+                    return false;
+                } else {
+                    return true;
+                }
+            });
+
+            updateGraph(selectedArtistsInfo);
+
             selectedArtists.splice(index, 1);
             displaySelectedArtists();
             saveSelectedArtists();
@@ -44,9 +63,10 @@ autocomplete(document.getElementById('artist-search'));
 function addRelatedArtistsToGraphData (sourceArtist, relatedArtists) {
     relatedArtists.forEach((relatedArtist, index) => {
         selectedArtistsInfo.nodes.push({
-            id: relatedArtist.name,
+            name: relatedArtist.name,
             popularity: relatedArtist.popularity,
             uuid: relatedArtist.id,
+            image: relatedArtist.images[0].url,
             group: 1
         });
         selectedArtistsInfo.links.push({
@@ -69,15 +89,16 @@ function addArtistToSelected (sourceArtist) {
 function addArtistToGraphData (sourceArtist) {
     getArtist(sourceArtist.id).then(data => {
         selectedArtistsInfo.nodes.push({
-            id: sourceArtist.name,
+            name: sourceArtist.name,
             popularity: data.popularity,
             uuid: sourceArtist.id,
+            image: data.images[0].url,
             group: 1
         });
     });
 
     getRelatedArtists(sourceArtist.id).then(data => {
-        const relatedArtists = data.artists.splice(0, 6);
+        const relatedArtists = data.artists.splice(0, maxNumRelated);
         addRelatedArtistsToGraphData(sourceArtist, relatedArtists)
         updateGraph(selectedArtistsInfo);
     });
@@ -107,13 +128,13 @@ function autocomplete(inputElem) {
                     dropdownItem.innerHTML = '<strong>' + artist.name.substr(0, searchQuery.length) + '</strong>';
                     dropdownItem.innerHTML += artist.name.substr(searchQuery.length);
                     dropdownItem.innerHTML += '<input type="hidden" value="' + artist.name + '">';
-    
+                    
                     dropdownItem.addEventListener('click', () => {
                         inputElem.value = '';
                         if (!selectedArtists.find(artistinArr => artistinArr.id === sourceArtist.id)) {
-                            console.log(artist)
                             addArtistToSelected(artist);
-                            addArtistToGraphData(artist);
+                            addArtistToGraphData(artist, maxNumRelated);
+                            getTopTrack(artist);
                         }
                         saveSelectedArtists();
                         closeAllLists();
@@ -168,6 +189,11 @@ function autocomplete(inputElem) {
     });
 }
 
+// relatedSlider.addEventListener('input', e => {
+//     maxNumRelated = +e.target.value;
+//     selectedArtists.forEach(artist => addArtistToGraphData(artist));
+// });
+
 drawGraph();
 
-export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected }
+export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, artistInfoImg, artistInfoAudio }
