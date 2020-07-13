@@ -1,5 +1,5 @@
-import { drawGraph, updateGraph, graph } from './graph'
-import { searchArtists, getRelatedArtists, getArtist, getTopTrack } from './requests'
+import { updateGraph } from './graph'
+import { searchArtists, getRelatedArtists, getArtist } from './requests'
 
 const artistSearchElem = document.getElementById('artist-search');
 const selectedArtistsElem = document.querySelector('.selected-artists');
@@ -62,13 +62,16 @@ autocomplete(document.getElementById('artist-search'));
 
 function addRelatedArtistsToGraphData (sourceArtist, relatedArtists) {
     relatedArtists.forEach((relatedArtist, index) => {
-        selectedArtistsInfo.nodes.push({
-            name: relatedArtist.name,
-            popularity: relatedArtist.popularity,
-            uuid: relatedArtist.id,
-            image: relatedArtist.images[0].url,
-            group: 1
-        });
+        if (!selectedArtistsInfo.nodes.find(artist => artist.name === relatedArtist.name)) {
+            selectedArtistsInfo.nodes.push({
+                name: relatedArtist.name,
+                popularity: relatedArtist.popularity,
+                uuid: relatedArtist.id,
+                image: relatedArtist.images[0].url,
+                group: 1
+            });
+        }
+
         selectedArtistsInfo.links.push({
             source: sourceArtist.name,
             target: relatedArtist.name,
@@ -88,18 +91,20 @@ function addArtistToSelected (sourceArtist) {
 
 function addArtistToGraphData (sourceArtist) {
     getArtist(sourceArtist.id).then(data => {
-        selectedArtistsInfo.nodes.push({
-            name: sourceArtist.name,
-            popularity: data.popularity,
-            uuid: sourceArtist.id,
-            image: data.images[0].url,
-            group: 1
-        });
+        if (!selectedArtistsInfo.nodes.find(artist => artist.name === sourceArtist.name)) {
+            selectedArtistsInfo.nodes.push({
+                name: sourceArtist.name,
+                popularity: data.popularity,
+                uuid: sourceArtist.id,
+                image: data.images[0].url,
+                group: 1
+            });
+        }
     });
 
     getRelatedArtists(sourceArtist.id).then(data => {
         const relatedArtists = data.artists.splice(0, maxNumRelated);
-        addRelatedArtistsToGraphData(sourceArtist, relatedArtists)
+        addRelatedArtistsToGraphData(sourceArtist, relatedArtists);
         updateGraph(selectedArtistsInfo);
     });
 }
@@ -131,10 +136,9 @@ function autocomplete(inputElem) {
                     
                     dropdownItem.addEventListener('click', () => {
                         inputElem.value = '';
-                        if (!selectedArtists.find(artistinArr => artistinArr.id === sourceArtist.id)) {
+                        if (!selectedArtists.find(artistinArr => artistinArr.id === artist.id)) {
                             addArtistToSelected(artist);
                             addArtistToGraphData(artist, maxNumRelated);
-                            getTopTrack(artist);
                         }
                         saveSelectedArtists();
                         closeAllLists();
@@ -194,6 +198,6 @@ function autocomplete(inputElem) {
 //     selectedArtists.forEach(artist => addArtistToGraphData(artist));
 // });
 
-drawGraph();
+//drawGraph();
 
 export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, artistInfoImg, artistInfoAudio }

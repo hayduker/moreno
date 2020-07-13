@@ -102,3 +102,14 @@ transform: scale(1.2);
   object-fit: cover;
   border-radius: 50%;
 }
+
+.link {
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.node {
+  fill: #1f77b4;
+  stroke: #fff;
+  stroke-width: 1.5px;
+}

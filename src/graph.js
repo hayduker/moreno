@@ -1,198 +1,134 @@
 import { getRelatedArtists } from './requests'
-import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, artistInfoImg, artistInfoAudio } from './index'
+import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, artistInfoImg } from './index'
 
-var graph;
+const svg = d3.select('svg');
+const width = +svg.attr('width');
+const height = +svg.attr('height');
+const color = d3.scaleOrdinal(d3.schemeCategory10);
+const graph = { nodes: [], links: [] };
 
-const svg = d3.select('svg'),
-    width = +svg.attr('width'),
-    height = +svg.attr('height');
+const linksContainer = svg.append('g').attr('class', 'links');
+const nodesContainer = svg.append('g').attr('class', 'nodes');
 
-function myGraph() {
-    // Add and remove elements on the graph object
-    this.addNode = node => {
-        nodes.push({ 'name': node.name, 'popularity': node.popularity, 'uuid': node.uuid, 'image': node.image, 'audio': node.audio });
-        update();
-    };
+const simulation = d3.forceSimulation()
+                     .force('link', d3.forceLink().id(function(d) { return d.name; }))
+                     .force('charge', d3.forceManyBody())
+                     .force('center', d3.forceCenter(width / 2, height / 2))
+                     .on('tick', ticked);
 
-    this.removeNode = function (name) {
-        var i = 0;
-        var n = findNode(name);
-        while (i < links.length) {
-            if ((links[i]['source'] == n) || (links[i]['target'] == n)) {
-                links.splice(i, 1);
-            }
-            else i++;
-        }
-        nodes.splice(findNodeIndex(name), 1);
-        update();
-    };
+function start () {
+    const nodeElements = nodesContainer.selectAll('g').data(graph.nodes, d => d.name);
+    const node = nodeElements.enter().append('g');
+    
+    node.append('circle')
+        .attr('r', 5)
+        .attr('fill', function(d) { return color(d.group); })
+        .attr('cursor', 'pointer')
+        .on('dblclick', dblclick)
+        .on('click', click)
+        .call(d3.drag()
+            .on('start', dragstarted)
+            .on('drag', dragged)
+            .on('end', dragended));
 
-    this.removeLink = function (source, target) {
-        for (var i = 0; i < links.length; i++) {
-            if (links[i].source.name == source && links[i].target.name == target) {
-                links.splice(i, 1);
-                break;
-            }
-        }
-        update();
-    };
+    node.append('text')
+        .text(d => d.name)
+        .attr('x', 6)
+        .attr('y', 3);
 
-    this.removeallLinks = function () {
-        links.splice(0, links.length);
-        update();
-    };
+    nodeElements.exit().remove();
 
-    this.removeAllNodes = function () {
-        nodes.splice(0, links.length);
-        update();
-    };
+    const linkElements = linksContainer.selectAll('line').data(graph.links);
 
-    this.addLink = function (source, target, value) {
-        links.push({ "source": findNode(source), "target": findNode(target), "value": value });
-        update();
-    };
+    linkElements.enter()
+        .append('line')
+        .attr('stroke-width', 1.5)
+        .attr('stroke', 'black');
 
-    var findNode = function (name) {
-        for (var i in nodes) {
-            if (nodes[i]["name"] === name) return nodes[i];
-        }
-        ;
-    };
+    linkElements.exit().remove();
 
-    var findNodeIndex = function (name) {
-        for (var i = 0; i < nodes.length; i++) {
-            if (nodes[i].name == name) {
-                return i;
-            }
-        }
-        ;
-    };
+    simulation.nodes(graph.nodes);
+    simulation.force('link').links(graph.links);
+    simulation.restart();
+};
 
-    // set up the D3 visualisation in the specified element
-    var vis = svg.attr("id", "svg")
-        .attr("pointer-events", "all")
-        .attr("viewBox", "0 0 " + width + " " + height)
-        .attr("perserveAspectRatio", "xMinYMid")
-        .append('svg:g');
-
-    var force = d3.layout.force();
-
-    var nodes = force.nodes(),
-        links = force.links();
-
-    var update = function () {
-        var link = vis.selectAll("line")
-            .data(links, d => d.source.name + "-" + d.target.name);
-
-        link.enter().append("line")
-            .attr("name", d => d.source.name + "-" + d.target.name)
-            .attr("stroke-width", 2)
-            .attr("stroke", "#aaa")
-            .attr("class", "link");
-
-        link.append("title")
-            .text(d => d.value);
-
-        link.exit().remove();
-
-        var node = vis.selectAll("g.node")
-            .data(nodes, d => d.name);
-
-        var nodeEnter = node.enter().append("g")
-            .attr("class", "node")
-            .call(force.drag);
-
-        nodeEnter.append("svg:circle")
-            .attr("r", d => Math.sqrt(d.popularity))
-            .attr("name", d => "Node;" + d.name)
-            .attr("class", "nodeStrokeClass")
-            .attr("fill", '#aaa')
-            .on('dblclick', dblclick)
-            .on('click', click);
-
-        nodeEnter.append("svg:text")
-            .attr("class", "textClass")
-            .attr("x", 14)
-            .attr("y", ".31em")
-            .text(d => d.name);
-
-        node.exit().remove();
-
-        force.on("tick", (e) => {
-            node.attr("transform", d => "translate(" + d.x + "," + d.y + ")");
-
-            // nodes.forEach(function(d) {
-            //     d.y += (height/2 - d.y) * e.alpha;
-            //     d.x += (height/2 - d.x) * e.alpha;
-            //   });
-            // node
-            // .attr("cx", function(d) { return d.x = Math.max(d.r, Math.min(width - d.r, d.x)); })
-            // .attr("cy", function(d) { return d.y = Math.max(d.r, Math.min(height - d.r, d.y)); });
-
-            link.attr("x1", d => d.source.x)
-                .attr("y1", d => d.source.y)
-                .attr("x2", d => d.target.x)
-                .attr("y2", d => d.target.y);
-        });
-
-        // Restart the force layout.
-        force
-            .gravity(5.0)
-            .charge(-3000)
-            .linkDistance(d => d.value * 5)
-            .size([width/2, height/2])
-            .start();
-    };
-
-    function click(d) {
-        artistInfoName.innerText = d.name;
-        artistInfoImg.src = d.image;
-        artistInfoAudio.src = d.audio;
-    }
-
-    function dblclick(d) {
-        addArtistToSelected(d);
-        getRelatedArtists(d.uuid).then(data => {
-            data.artists.splice(0, maxNumRelated).forEach((relatedArtist, index) => {
-                selectedArtistsInfo.nodes.push({
-                    name: relatedArtist.name,
-                    popularity: relatedArtist.popularity,
-                    uuid: relatedArtist.id,
-                    image: relatedArtist.images[0].url,
-                    group: 1
-                });
-                selectedArtistsInfo.links.push({
-                    source: d.name,
-                    target: relatedArtist.name,
-                    value: index + 1
-                });
-            })
-
-            updateGraph(selectedArtistsInfo);
-        });
-    }
-
-    // Make it all go
-    update();
+function click(d) {
+    artistInfoName.innerText = d.name;
+    artistInfoImg.src = d.image;
 }
 
-function updateGraph(graphData) {
-    graphData.nodes.forEach(node => graph.addNode(node));
-    graphData.links.forEach(link => graph.addLink(link.source, link.target, '20'));
-    keepNodesOnTop();
-}
+function dblclick(d) {
+    addArtistToSelected(d);
+    getRelatedArtists(d.uuid).then(data => {
+        data.artists.splice(0, maxNumRelated).forEach((relatedArtist, index) => {
+            selectedArtistsInfo.nodes.push({
+                name: relatedArtist.name,
+                popularity: relatedArtist.popularity,
+                uuid: relatedArtist.id,
+                image: relatedArtist.images[0].url,
+                group: 1
+            });
+            selectedArtistsInfo.links.push({
+                source: d.name,
+                target: relatedArtist.name,
+                value: index + 1
+            });
+        })
 
-function drawGraph() {
-    graph = new myGraph("#svgdiv");
-}
-
-// because of the way the network is created, nodes are created first, and links second,
-// so the lines were on top of the nodes, this just reorders the DOM to put the svg:g on top
-function keepNodesOnTop() {
-    document.querySelectorAll(".nodeStrokeClass").forEach(elem => {
-        var gnode = elem.parentNode;
-        gnode.parentNode.appendChild(gnode);
+        updateGraph(selectedArtistsInfo);
     });
 }
 
-export { drawGraph, updateGraph, graph }
+function ticked() {
+    nodesContainer.selectAll('g')
+                  .attr('transform', d => `translate(${d.x},${d.y})`)
+
+    linksContainer.selectAll('line')
+                  .attr('x1', d => d.source.x)
+                  .attr('y1', d => d.source.y)
+                  .attr('x2', d => d.target.x)
+                  .attr('y2', d => d.target.y);
+}
+
+const addNode = node => graph.nodes.push(node);
+const addLink = (source, target) => graph.links.push({source, target});
+const createNode = artist => { 
+    return { x: width/2, y: height/2, ...artist }
+};
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+function updateGraph(graphData) {
+    graphData.nodes.forEach(artist => {
+        if (!graph.nodes.find(node => node.name === artist.name)) {
+            addNode(createNode(artist))
+        }
+    });
+    graphData.links.forEach(newLink => {
+        if (!graph.links.find(link => link.source.name === newLink.source &&
+                              link.target.name === newLink.target)) {
+            addLink(graph.nodes.find(node => node.name === newLink.source), 
+                    graph.nodes.find(node => node.name === newLink.target))
+        }
+    });
+    start();
+}
+
+start();
+
+export { updateGraph }
