@@ -5,8 +5,8 @@ const artistSearchElem = document.getElementById('artist-search');
 const selectedArtistsElem = document.querySelector('.selected-artists');
 
 const artistInfoName = document.querySelector('.artist-info-name');
-const artistInfoImg = document.querySelector('.artist-info-img');
-const artistInfoAudio = document.querySelector('.artist-info-audio');
+// const artistInfoImg = document.querySelector('.artist-info-img');
+const spotifyPlayer = document.querySelector('#spotify-player');
 
 // const relatedSlider = document.querySelector('.related-slider');
 
@@ -200,4 +200,4 @@ function autocomplete(inputElem) {
 
 //drawGraph();
 
-export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, artistInfoImg, artistInfoAudio }
+export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, spotifyPlayer }

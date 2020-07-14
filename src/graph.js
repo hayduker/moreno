@@ -1,5 +1,7 @@
 import { getRelatedArtists } from './requests'
-import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, artistInfoImg } from './index'
+import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, spotifyPlayer } from './index'
+
+const playerContainer = document.querySelector('.player-container');
 
 const svg = d3.select('svg');
 const width = +svg.attr('width');
@@ -12,8 +14,13 @@ const nodesContainer = svg.append('g').attr('class', 'nodes');
 
 const simulation = d3.forceSimulation()
                      .force('link', d3.forceLink().id(function(d) { return d.name; }))
-                     .force('charge', d3.forceManyBody())
+                     .force('charge', d3.forceManyBody().strength(-1000))
                      .force('center', d3.forceCenter(width / 2, height / 2))
+                     .force("collide",
+                        d3.forceCollide()
+                        .radius(5)
+                        .strength(0.7)
+                        .iterations(16))
                      .on('tick', ticked);
 
 function start () {
@@ -21,8 +28,8 @@ function start () {
     const node = nodeElements.enter().append('g');
     
     node.append('circle')
-        .attr('r', 5)
-        .attr('fill', function(d) { return color(d.group); })
+        .attr('r', d => d.popularity / 10)
+        .attr('fill', d => color(d.group))
         .attr('cursor', 'pointer')
         .on('dblclick', dblclick)
         .on('click', click)
@@ -42,8 +49,8 @@ function start () {
 
     linkElements.enter()
         .append('line')
-        .attr('stroke-width', 1.5)
-        .attr('stroke', 'black');
+        .attr('stroke-width', 1.0)
+        .attr('stroke', '#777');
 
     linkElements.exit().remove();
 
@@ -54,7 +61,13 @@ function start () {
 
 function click(d) {
     artistInfoName.innerText = d.name;
-    artistInfoImg.src = d.image;
+    // artistInfoImg.src = d.image;
+    // artistInfoImg.style.visibility = 'visible';
+    console.log(`https://open.spotify.com/embed/artist/${d.uuid}`)
+    // spotifyPlayer.src = `https://open.spotify.com/embed/artist/${d.uuid}`
+    // spotifyPlayer.style.visibility = 'visible';
+
+    playerContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/artist/${d.uuid}" class="spotify-player" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
 }
 
 function dblclick(d) {
