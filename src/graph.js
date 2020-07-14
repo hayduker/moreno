@@ -12,6 +12,36 @@ const graph = { nodes: [], links: [] };
 const linksContainer = svg.append('g').attr('class', 'links');
 const nodesContainer = svg.append('g').attr('class', 'nodes');
 
+let defaultNodeFill = "#1f77b4";
+let defaultNodeStroke = '#eee';
+let defaultNodeStrokeWidth = 2.0;
+let highlightNodeStrokeWidth = 4.0;
+let defaultFontWeight = 'regular';
+let highlightFontWeight = 'bold';
+let highlightLinkColor = '#444';
+let defaultLinkColor = '#888';
+let defaultLinkWidth = 1.0;
+let highlightLinkWidth = 2.0;
+let defaultTransparency = 1.0;
+let highlightTransparency = 0.5;
+
+let min_zoom = 0.1;
+let max_zoom = 7;
+let zoom = d3.zoom().scaleExtent([min_zoom,max_zoom])
+ 
+zoom.on("zoom", () => console.log('hey'));
+
+let linkedByIndex = {};
+function findConnections() {
+    graph.links.forEach(d => {
+        linkedByIndex[d.source.index + "," + d.target.index] = true
+    });
+}
+
+function isConnected(a, b) {
+    return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index;
+}
+
 const simulation = d3.forceSimulation()
                      .force('link', d3.forceLink().id(function(d) { return d.name; }))
                      .force('charge', d3.forceManyBody().strength(-1000))
@@ -29,10 +59,15 @@ function start () {
     
     node.append('circle')
         .attr('r', d => d.popularity / 10)
-        .attr('fill', d => color(d.group))
+        .attr('fill', defaultNodeFill) //color(d.group))
+        .attr('stroke', '#eee')
+        .attr('stroke-width', 2.0)
         .attr('cursor', 'pointer')
         .on('dblclick', dblclick)
         .on('click', click)
+        .on("mouseover", d => set_highlight(d))
+        .on("mouseout", exit_highlight)
+        .on("dblclick.zoom", () => console.log('hey'))
         .call(d3.drag()
             .on('start', dragstarted)
             .on('drag', dragged)
@@ -50,7 +85,7 @@ function start () {
     linkElements.enter()
         .append('line')
         .attr('stroke-width', 1.0)
-        .attr('stroke', '#777');
+        .attr('stroke', defaultLinkColor);
 
     linkElements.exit().remove();
 
@@ -90,6 +125,40 @@ function dblclick(d) {
 
         updateGraph(selectedArtistsInfo);
     });
+}
+
+function set_highlight(d) {
+    findConnections();
+
+    let node = svg.selectAll('circle');
+    let text = svg.selectAll('text');
+    let link = svg.selectAll('line');
+
+    svg.style('cursor','pointer');
+    node.style('stroke', o => isConnected(d, o) ? defaultNodeFill : defaultNodeStroke);
+    node.style('stroke-width', o => isConnected(d, o) ? highlightNodeStrokeWidth : defaultNodeStrokeWidth);
+    node.style('opacity', o => isConnected(d, o) ? 1 : highlightTransparency);
+    text.style('font-weight', o => isConnected(d, o) ? highlightFontWeight : defaultFontWeight);
+    text.style('opacity', o => isConnected(d, o) ? 1 : highlightTransparency);
+    link.style('stroke', o => o.source.index == d.index || o.target.index == d.index ? highlightLinkColor : defaultLinkColor);
+    link.style('stroke-width', o => o.source.index == d.index || o.target.index == d.index ? highlightLinkWidth : defaultLinkWidth);
+    link.style('opacity', o => o.source.index == d.index || o.target.index == d.index ? 1 : highlightTransparency);		
+}
+
+function exit_highlight() {
+    let node = svg.selectAll('circle');
+    let text = svg.selectAll('text');
+    let link = svg.selectAll('line');
+
+    svg.style('cursor','move');
+    node.style('stroke', defaultNodeStroke);
+    node.style('stroke-width', defaultNodeStrokeWidth);
+    node.style('opacity', defaultTransparency);
+    text.style('font-weight', 100);
+    text.style('opacity', defaultTransparency);
+    link.style('stroke', defaultLinkColor);
+    link.style('stroke-width', defaultLinkWidth);
+    link.style('opacity', defaultTransparency);
 }
 
 function ticked() {
@@ -141,6 +210,10 @@ function updateGraph(graphData) {
     });
     start();
 }
+
+function isNumber(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+}	
 
 start();
 
