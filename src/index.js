@@ -6,13 +6,12 @@ const selectedArtistsElem = document.querySelector('.selected-artists');
 
 const artistInfoName = document.querySelector('.artist-info-name');
 // const artistInfoImg = document.querySelector('.artist-info-img');
-const spotifyPlayer = document.querySelector('#spotify-player');
 
 // const relatedSlider = document.querySelector('.related-slider');
 
-const selectedArtists = []; // JSON.parse(localStorage.getItem('selected-artists')) || [];
+let selectedArtists = []; // JSON.parse(localStorage.getItem('selected-artists')) || [];
 
-const selectedArtistsInfo = {
+let selectedArtistsInfo = {
     nodes: [],
     links: []
 };
@@ -32,19 +31,14 @@ function displaySelectedArtists() {
 
         const deleteBtn = document.createElement('button');
         deleteBtn.innerHTML = '<i class="fas fa-times remove-artist"></i>';
-        deleteBtn.addEventListener('click', () => {
-            selectedArtistsInfo.links = selectedArtistsInfo.links.filter(link => {
-                if (link.source === artist.name) {
-                    graph.removeLink(link.source, link.target);
-                    return false;
-                } else {
-                    return true;
-                }
-            });
+        deleteBtn.addEventListener('click', () => {     
+            selectedArtists.splice(index, 1);
+            selectedArtistsInfo.links = selectedArtistsInfo.links.filter(link => link.source !== artist.name);
+
+            const artistsToKeep = selectedArtists.map(artist => artist.name).concat(selectedArtistsInfo.links.map(link => link.target));
+            selectedArtistsInfo.nodes = selectedArtistsInfo.nodes.filter(node => artistsToKeep.includes(node.name));
 
             updateGraph(selectedArtistsInfo);
-
-            selectedArtists.splice(index, 1);
             displaySelectedArtists();
             saveSelectedArtists();
         });
@@ -62,7 +56,7 @@ autocomplete(document.getElementById('artist-search'));
 
 function addRelatedArtistsToGraphData (sourceArtist, relatedArtists) {
     relatedArtists.forEach((relatedArtist, index) => {
-        if (!selectedArtistsInfo.nodes.find(artist => artist.name === relatedArtist.name)) {
+        if (!selectedArtistsInfo.nodes.map(node => node.name).includes(relatedArtist.name)) {
             selectedArtistsInfo.nodes.push({
                 name: relatedArtist.name,
                 popularity: relatedArtist.popularity,
@@ -91,7 +85,7 @@ function addArtistToSelected (sourceArtist) {
 
 function addArtistToGraphData (sourceArtist) {
     getArtist(sourceArtist.id).then(data => {
-        if (!selectedArtistsInfo.nodes.find(artist => artist.name === sourceArtist.name)) {
+        if (!selectedArtistsInfo.nodes.map(node => node.name).includes(sourceArtist.name)) {
             selectedArtistsInfo.nodes.push({
                 name: sourceArtist.name,
                 popularity: data.popularity,
@@ -200,4 +194,4 @@ function autocomplete(inputElem) {
 
 //drawGraph();
 
-export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, spotifyPlayer }
+export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists}

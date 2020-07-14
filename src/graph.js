@@ -1,5 +1,5 @@
 import { getRelatedArtists } from './requests'
-import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, spotifyPlayer } from './index'
+import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists } from './index'
 
 const playerContainer = document.querySelector('.player-container');
 
@@ -41,8 +41,8 @@ function isConnected(a, b) {
 }
 
 const simulation = d3.forceSimulation()
-                     .force('link', d3.forceLink().id(function(d) { return d.name; }))
-                     .force('charge', d3.forceManyBody().strength(-1000))
+                     .force('link', d3.forceLink().id(function(d) { return d.name; }).distance(30))
+                     .force('charge', d3.forceManyBody().strength(-400))
                      .force('center', d3.forceCenter(width / 2, height / 2))
                      .force("collide",
                         d3.forceCollide()
@@ -93,12 +93,6 @@ function start () {
 
 function click(d) {
     artistInfoName.innerText = d.name;
-    // artistInfoImg.src = d.image;
-    // artistInfoImg.style.visibility = 'visible';
-    console.log(`https://open.spotify.com/embed/artist/${d.uuid}`)
-    // spotifyPlayer.src = `https://open.spotify.com/embed/artist/${d.uuid}`
-    // spotifyPlayer.style.visibility = 'visible';
-
     playerContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/artist/${d.uuid}" class="spotify-player" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
 }
 
@@ -106,13 +100,15 @@ function dblclick(d) {
     addArtistToSelected(d);
     getRelatedArtists(d.uuid).then(data => {
         data.artists.splice(0, maxNumRelated).forEach((relatedArtist, index) => {
-            selectedArtistsInfo.nodes.push({
-                name: relatedArtist.name,
-                popularity: relatedArtist.popularity,
-                uuid: relatedArtist.id,
-                image: relatedArtist.images[0].url,
-                group: 1
-            });
+            if (!selectedArtistsInfo.nodes.map(node => node.name).includes(relatedArtist.name)) {
+                selectedArtistsInfo.nodes.push({
+                    name: relatedArtist.name,
+                    popularity: relatedArtist.popularity,
+                    uuid: relatedArtist.id,
+                    image: relatedArtist.images[0].url,
+                    group: 1
+                });
+            }
             selectedArtistsInfo.links.push({
                 source: d.name,
                 target: relatedArtist.name,
@@ -183,6 +179,29 @@ const createNode = artist => {
     return { x: width/2, y: height/2, ...artist }
 };
 
+const removeNode = name => {
+    var i = 0;
+    var n = findNode(name);
+    while (i < links.length) {
+        if ((links[i]['source'] == n) || (links[i]['target'] == n)) {
+            links.splice(i, 1);
+        }
+        else i++;
+    }
+    nodes.splice(findNodeIndex(name), 1);
+    update();
+};
+
+const removeLink = (source, target) => {
+    for (var i = 0; i < links.length; i++) {
+        if (links[i].source.name == source && links[i].target.name == target) {
+            links.splice(i, 1);
+            break;
+        }
+    }
+    update();
+};
+
 function dragstarted(d) {
   if (!d3.event.active) simulation.alphaTarget(0.3).restart();
   d.fx = d.x;
@@ -201,11 +220,17 @@ function dragended(d) {
 }
 
 function updateGraph(graphData) {
+    const updatedArtists = graphData.nodes.map(artist => artist.name);
+    graph.nodes = graph.nodes.filter(node => {
+        return updatedArtists.includes(node.name);
+    });
     graphData.nodes.forEach(artist => {
         if (!graph.nodes.find(node => node.name === artist.name)) {
             addNode(createNode(artist))
         }
     });
+
+    graph.links = graph.links.filter(link => selectedArtists.includes(link.source.name));
     graphData.links.forEach(newLink => {
         if (!graph.links.find(link => link.source.name === newLink.source &&
                               link.target.name === newLink.target)) {
@@ -215,10 +240,6 @@ function updateGraph(graphData) {
     });
     start();
 }
-
-function isNumber(n) {
-    return !isNaN(parseFloat(n)) && isFinite(n);
-}	
 
 start();
 
