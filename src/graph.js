@@ -25,11 +25,9 @@ let highlightLinkWidth = 2.0;
 let defaultTransparency = 1.0;
 let highlightTransparency = 0.5;
 
-let min_zoom = 0.1;
-let max_zoom = 7;
+let min_zoom = 0.4;
+let max_zoom = 2;
 let zoom = d3.zoom().scaleExtent([min_zoom,max_zoom])
- 
-zoom.on("zoom", () => console.log('hey'));
 
 let linkedByIndex = {};
 function findConnections() {
@@ -67,7 +65,6 @@ function start () {
         .on('click', click)
         .on("mouseover", d => set_highlight(d))
         .on("mouseout", exit_highlight)
-        .on("dblclick.zoom", () => console.log('hey'))
         .call(d3.drag()
             .on('start', dragstarted)
             .on('drag', dragged)
@@ -171,6 +168,14 @@ function ticked() {
                   .attr('x2', d => d.target.x)
                   .attr('y2', d => d.target.y);
 }
+
+zoom.on("zoom", function() {
+    nodesContainer.attr("transform", d3.event.transform);
+    linksContainer.attr("transform", d3.event.transform);
+})
+
+svg.call(zoom).on("dblclick.zoom", null);
+  
 
 const addNode = node => graph.nodes.push(node);
 const addLink = (source, target) => graph.links.push({source, target});
