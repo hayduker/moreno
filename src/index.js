@@ -5,7 +5,6 @@ const artistSearchElem = document.getElementById('artist-search');
 const selectedArtistsElem = document.querySelector('.selected-artists');
 
 const artistInfoName = document.querySelector('.artist-info-name');
-// const artistInfoImg = document.querySelector('.artist-info-img');
 
 // const relatedSlider = document.querySelector('.related-slider');
 

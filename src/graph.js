@@ -64,7 +64,7 @@ function start () {
         .on('dblclick', dblclick)
         .on('click', click)
         .on("mouseover", d => set_highlight(d))
-        .on("mouseout", exit_highlight)
+        .on("mouseout", d => exit_highlight(d))
         .call(d3.drag()
             .on('start', dragstarted)
             .on('drag', dragged)
@@ -88,7 +88,7 @@ function start () {
 
     simulation.nodes(graph.nodes);
     simulation.force('link').links(graph.links);
-    simulation.restart();
+    simulation.alphaTarget(0.1).restart();
 };
 
 function click(d) {
@@ -121,6 +121,8 @@ function dblclick(d) {
 }
 
 function set_highlight(d) {
+    d.fx = d.x;
+    d.fy = d.y;
     findConnections();
 
     let node = svg.selectAll('circle');
@@ -138,7 +140,10 @@ function set_highlight(d) {
     link.style('opacity', o => o.source.index == d.index || o.target.index == d.index ? 1 : highlightTransparency);		
 }
 
-function exit_highlight() {
+function exit_highlight(d) {
+    d.fx = null;
+    d.fy = null;
+    
     let node = svg.selectAll('circle');
     let text = svg.selectAll('text');
     let link = svg.selectAll('line');
