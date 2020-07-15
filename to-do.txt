@@ -1,0 +1,9 @@
+Moreno To-do:
+
+- Fixed height and scroll on selected artists
+- Text always above nodes but nodes always hoverable
+- Don't recreate iframe if artist is already active
+- Fix height of svg to fit vh
+- Reduce width of sidebar and size of album
+- Collapsible nodes for selected artists
+- Spinny thing on 1sec timeout while iframe loads

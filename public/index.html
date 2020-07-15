@@ -11,6 +11,11 @@
 
 <body>
     <div class="sidebar">
+        <div class="title-container">
+            <h1 class="title">Moreno</h1>
+            <h2 class="subtitle">&middot; map your favorite musicians &middot;</h2>
+        </div>
+
         <div class="search-container">
             <form autocomplete="off" action="/action_page.php">
                 <div class="autocomplete">
@@ -19,7 +24,7 @@
             </form>
         </div>
         <div class="selected-artists-container">
-            <h2 class="selected-artists-title">Selected artists:</h2>
+            <h2 class="selected-artists-title">Selected Artists</h2>
             <ul class="selected-artists"></ul>
         </div>
 
@@ -29,9 +34,9 @@
         </div>
     </div>
 
-    <svg id="graph" width="1000" height="650"></svg>
-
-
+    <div class="graph-container">
+        <svg id="graph" class="graph" width="1000" height="650"></svg>
+    </div>
 
     <script src="https://d3js.org/d3.v5.js"></script>
     <script src="/scripts/bundle.js"></script>

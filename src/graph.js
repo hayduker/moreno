@@ -54,10 +54,10 @@ const simulation = d3.forceSimulation()
 function start () {
     const nodeElements = nodesContainer.selectAll('g').data(graph.nodes, d => d.name);
     const node = nodeElements.enter().append('g');
-    
+    const popularityScalar = 0.1;
     node.append('circle')
-        .attr('r', d => d.popularity / 10)
-        .attr('fill', defaultNodeFill) //color(d.group))
+        .attr('r', d => d.popularity * popularityScalar)
+        .attr('fill', defaultNodeFill)
         .attr('stroke', '#eee')
         .attr('stroke-width', 2.0)
         .attr('cursor', 'pointer')
@@ -72,8 +72,8 @@ function start () {
 
     node.append('text')
         .text(d => d.name)
-        .attr('x', 6)
-        .attr('y', 3);
+        .attr('x', d => d.popularity * popularityScalar-2)
+        .attr('y', d => -d.popularity * popularityScalar+2);
 
     nodeElements.exit().remove();
 
@@ -97,27 +97,29 @@ function click(d) {
 }
 
 function dblclick(d) {
-    addArtistToSelected(d);
-    getRelatedArtists(d.uuid).then(data => {
-        data.artists.splice(0, maxNumRelated).forEach((relatedArtist, index) => {
-            if (!selectedArtistsInfo.nodes.map(node => node.name).includes(relatedArtist.name)) {
-                selectedArtistsInfo.nodes.push({
-                    name: relatedArtist.name,
-                    popularity: relatedArtist.popularity,
-                    uuid: relatedArtist.id,
-                    image: relatedArtist.images[0].url,
-                    group: 1
+    if (!selectedArtists.map(artist => artist.name).includes(d.name)) {
+        addArtistToSelected(d);
+        getRelatedArtists(d.uuid).then(data => {
+            data.artists.splice(0, maxNumRelated).forEach((relatedArtist, index) => {
+                if (!selectedArtistsInfo.nodes.map(node => node.name).includes(relatedArtist.name)) {
+                    selectedArtistsInfo.nodes.push({
+                        name: relatedArtist.name,
+                        popularity: relatedArtist.popularity,
+                        uuid: relatedArtist.id,
+                        image: relatedArtist.images[0].url,
+                        group: 1
+                    });
+                }
+                selectedArtistsInfo.links.push({
+                    source: d.name,
+                    target: relatedArtist.name,
+                    value: index + 1
                 });
-            }
-            selectedArtistsInfo.links.push({
-                source: d.name,
-                target: relatedArtist.name,
-                value: index + 1
-            });
-        })
-
-        updateGraph(selectedArtistsInfo);
-    });
+            })
+    
+            updateGraph(selectedArtistsInfo);
+        });
+    }
 }
 
 function set_highlight(d) {
@@ -130,7 +132,7 @@ function set_highlight(d) {
     let link = svg.selectAll('line');
 
     svg.style('cursor','pointer');
-    node.style('stroke', o => isConnected(d, o) ? defaultNodeFill : defaultNodeStroke);
+    node.style('stroke', o => isConnected(d, o) ? '#8c564b' : defaultNodeStroke);
     node.style('stroke-width', o => isConnected(d, o) ? highlightNodeStrokeWidth : defaultNodeStrokeWidth);
     node.style('opacity', o => isConnected(d, o) ? 1 : highlightTransparency);
     text.style('font-weight', o => isConnected(d, o) ? highlightFontWeight : defaultFontWeight);
@@ -143,7 +145,7 @@ function set_highlight(d) {
 function exit_highlight(d) {
     d.fx = null;
     d.fy = null;
-    
+
     let node = svg.selectAll('circle');
     let text = svg.selectAll('text');
     let link = svg.selectAll('line');

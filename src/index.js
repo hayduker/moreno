@@ -22,11 +22,7 @@ function displaySelectedArtists() {
     document.querySelector('.selected-artists-title').style.visibility = selectedArtists.length > 0 ? 'visible' : 'hidden';
     selectedArtists.forEach((artist, index) => {
         const listElem = document.createElement('li');
-        listElem.innerHTML = `
-        <div><i class="fas fa-angle-right"></i>
-            ${artist.name}
-        </div>
-        `;
+        listElem.innerHTML = `<div>${artist.name}</div>`;
 
         const deleteBtn = document.createElement('button');
         deleteBtn.innerHTML = '<i class="fas fa-times remove-artist"></i>';
