@@ -4,9 +4,8 @@ import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected,
 const playerContainer = document.querySelector('.player-container');
 
 const svg = d3.select('svg');
-const width = +svg.attr('width');
-const height = +svg.attr('height');
-const color = d3.scaleOrdinal(d3.schemeCategory10);
+const { width, height } = document.querySelector('#graph').getBoundingClientRect();
+
 const graph = { nodes: [], links: [] };
 
 const linksContainer = svg.append('g').attr('class', 'links');
