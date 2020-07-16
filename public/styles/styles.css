@@ -122,6 +122,11 @@ input[type=text] {
   width: 135px;
 }
 
+.selected-artists li:hover {
+  background-color: #999;
+  cursor: pointer;
+}
+
 .selected-artists li div {
   white-space: nowrap;
   overflow: hidden;

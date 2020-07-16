@@ -1,5 +1,5 @@
 import { getRelatedArtists } from './requests'
-import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists } from './index'
+import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists, addArtistToGraphData, addArtist } from './index'
 
 const playerContainer = document.querySelector('.player-container');
 const loadingContainer = document.querySelector('.loading-container');
@@ -62,7 +62,7 @@ function start () {
         .attr('stroke', '#eee')
         .attr('stroke-width', 2.0)
         .attr('cursor', 'pointer')
-        .on('dblclick', dblclick)
+        .on('dblclick', addArtist)
         .on('click', click)
         .on("mouseover", d => set_highlight(d))
         .on("mouseout", d => exit_highlight(d))
@@ -94,7 +94,7 @@ function start () {
 
 function click(d) {
     if (activeArtist !== d.name) {
-        playerContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/artist/${d.uuid}" class="spotify-player" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+        playerContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/artist/${d.id}" class="spotify-player" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
 
         artistInfoName.innerText = d.name;
         activeArtist = d.name;
@@ -106,32 +106,6 @@ function click(d) {
             loadingContainer.style.display = 'none';
             playerContainer.parentElement.style.display = 'flex';
         }, 1000);
-    }
-}
-
-function dblclick(d) {
-    if (!selectedArtists.map(artist => artist.name).includes(d.name)) {
-        addArtistToSelected(d);
-        getRelatedArtists(d.uuid).then(data => {
-            data.artists.splice(0, maxNumRelated).forEach((relatedArtist, index) => {
-                if (!selectedArtistsInfo.nodes.map(node => node.name).includes(relatedArtist.name)) {
-                    selectedArtistsInfo.nodes.push({
-                        name: relatedArtist.name,
-                        popularity: relatedArtist.popularity,
-                        uuid: relatedArtist.id,
-                        image: relatedArtist.images[0].url,
-                        group: 1
-                    });
-                }
-                selectedArtistsInfo.links.push({
-                    source: d.name,
-                    target: relatedArtist.name,
-                    value: index + 1
-                });
-            })
-    
-            updateGraph(selectedArtistsInfo);
-        });
     }
 }
 

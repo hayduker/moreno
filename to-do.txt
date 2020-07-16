@@ -7,3 +7,7 @@ Moreno To-do:
 - Remove iframe when active artist is removed
 - Collapsible nodes for selected artists
 - Hover and click listeners on selected artists (link to nodes)
+- Automatic focus on textbox when load page
+- Save artists to local storage?
+- Clear graph button
+- Fix delete button smush issue

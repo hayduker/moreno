@@ -49,13 +49,22 @@ function saveSelectedArtists() {
 
 autocomplete(document.getElementById('artist-search'));
 
+function addArtistToSelected (sourceArtist) {
+    selectedArtists.push({
+        name: sourceArtist.name,
+        id: sourceArtist.id,
+    });
+
+    displaySelectedArtists();
+}
+
 function addRelatedArtistsToGraphData (sourceArtist, relatedArtists) {
     relatedArtists.forEach((relatedArtist, index) => {
         if (!selectedArtistsInfo.nodes.map(node => node.name).includes(relatedArtist.name)) {
             selectedArtistsInfo.nodes.push({
                 name: relatedArtist.name,
                 popularity: relatedArtist.popularity,
-                uuid: relatedArtist.id,
+                id: relatedArtist.id,
                 image: relatedArtist.images[0].url,
                 group: 1
             });
@@ -69,22 +78,13 @@ function addRelatedArtistsToGraphData (sourceArtist, relatedArtists) {
     });
 };
 
-function addArtistToSelected (sourceArtist) {
-    selectedArtists.push({
-        name: sourceArtist.name,
-        id: sourceArtist.id,
-    });
-
-    displaySelectedArtists();
-}
-
 function addArtistToGraphData (sourceArtist) {
     getArtist(sourceArtist.id).then(data => {
         if (!selectedArtistsInfo.nodes.map(node => node.name).includes(sourceArtist.name)) {
             selectedArtistsInfo.nodes.push({
                 name: sourceArtist.name,
                 popularity: data.popularity,
-                uuid: sourceArtist.id,
+                id: sourceArtist.id,
                 image: data.images[0].url,
                 group: 1
             });
@@ -96,6 +96,13 @@ function addArtistToGraphData (sourceArtist) {
         addRelatedArtistsToGraphData(sourceArtist, relatedArtists);
         updateGraph(selectedArtistsInfo);
     });
+}
+
+function addArtist (sourceArtist) {
+    if (!selectedArtists.map(selectedArtist => selectedArtist.name).includes(sourceArtist.name)) {
+        addArtistToSelected(sourceArtist);
+        addArtistToGraphData(sourceArtist, maxNumRelated);
+    }
 }
 
 function autocomplete(inputElem) {
@@ -125,10 +132,7 @@ function autocomplete(inputElem) {
                     
                     dropdownItem.addEventListener('click', () => {
                         inputElem.value = '';
-                        if (!selectedArtists.find(artistinArr => artistinArr.id === artist.id)) {
-                            addArtistToSelected(artist);
-                            addArtistToGraphData(artist, maxNumRelated);
-                        }
+                        addArtist(artist);
                         saveSelectedArtists();
                         closeAllLists();
                     });
@@ -189,4 +193,4 @@ function autocomplete(inputElem) {
 
 //drawGraph();
 
-export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists}
+export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists, addArtistToGraphData, addArtist }
