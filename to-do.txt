@@ -1,7 +1,6 @@
 Moreno To-do:
 
 - Text always above nodes but nodes always hoverable
-- Fix height of svg to fit vh
 - Reduce width of sidebar and size of album
 - Spawn new nodes at select node if it exists
 - Click shouldn't cause node to start moving again

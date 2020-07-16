@@ -2,6 +2,7 @@ import { getRelatedArtists } from './requests'
 import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists } from './index'
 
 const playerContainer = document.querySelector('.player-container');
+const loadingContainer = document.querySelector('.loading-container');
 
 const svg = d3.select('svg');
 const { width, height } = document.querySelector('#graph').getBoundingClientRect();
@@ -92,11 +93,20 @@ function start () {
 };
 
 function click(d) {
-    artistInfoName.innerText = d.name;
     if (activeArtist !== d.name) {
         playerContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/artist/${d.uuid}" class="spotify-player" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+
+        artistInfoName.innerText = d.name;
+        activeArtist = d.name;
+
+        loadingContainer.style.display = 'flex';
+        playerContainer.parentElement.style.display = 'none';
+
+        setTimeout(() => {
+            loadingContainer.style.display = 'none';
+            playerContainer.parentElement.style.display = 'flex';
+        }, 1000);
     }
-    activeArtist = d.name;
 }
 
 function dblclick(d) {
