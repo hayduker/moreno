@@ -260,7 +260,13 @@ function updateGraph(graphData) {
     });
     start();
 
-    instructionsContainer.style.display = selectedArtists.length > 0 ? 'flex' : 'none';
+    if (selectedArtists.length > 0) {
+        instructionsContainer.style.display = 'flex';
+        svg.style('cursor','move');
+    } else {
+        instructionsContainer.style.display = 'none';
+        svg.style('cursor','default');
+    }
 }
 
 start();
