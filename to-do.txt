@@ -6,5 +6,4 @@ Moreno To-do:
 - Click shouldn't cause node to start moving again
 - Remove iframe when active artist is removed
 - Collapsible nodes for selected artists
-- Spinny thing on 1sec timeout while iframe loads
 - Hover and click listeners on selected artists (link to nodes)

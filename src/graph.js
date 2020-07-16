@@ -3,7 +3,7 @@ import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected,
 
 const playerContainer = document.querySelector('.player-container');
 const loadingContainer = document.querySelector('.loading-container');
-
+const instructionsContainer = document.querySelector('.instructions-container');
 const svg = d3.select('svg');
 const { width, height } = document.querySelector('#graph').getBoundingClientRect();
 
@@ -259,6 +259,8 @@ function updateGraph(graphData) {
         }
     });
     start();
+
+    instructionsContainer.style.display = selectedArtists.length > 0 ? 'flex' : 'none';
 }
 
 start();

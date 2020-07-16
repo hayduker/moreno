@@ -190,6 +190,32 @@ input[type=text] {
   vertical-align: top;
 }
 
+.instructions-container {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background-color: #fff;
+  align-items: center;
+  justify-content: center;
+  display: none;
+}
+
+.instructions {
+  width: 500px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.instructions p {
+  margin: 8px 0;
+}
+
+.instructions p b {
+  color: #8c564b;
+}
+
 .scrollbox {
   position: relative;
   z-index: 1;
