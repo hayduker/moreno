@@ -14,8 +14,7 @@ const nodesContainer = svg.append('g').attr('class', 'nodes');
 
 let defaultNodeFill = "#1f77b4";
 let defaultNodeStroke = '#eee';
-let defaultNodeStrokeWidth = 2.0;
-let highlightNodeStrokeWidth = 4.0;
+let highlightNodeStoke = '#8c564b';
 let defaultFontWeight = 'regular';
 let highlightFontWeight = 'bold';
 let highlightLinkColor = '#444';
@@ -23,7 +22,8 @@ let defaultLinkColor = '#888';
 let defaultLinkWidth = 1.0;
 let highlightLinkWidth = 2.0;
 let defaultTransparency = 1.0;
-let highlightTransparency = 0.5;
+let highlightTransparency = 0.3;
+const popularityScalar = 0.1;
 
 let min_zoom = 0.4;
 let max_zoom = 2;
@@ -54,7 +54,6 @@ const simulation = d3.forceSimulation()
 function start () {
     const nodeElements = nodesContainer.selectAll('g').data(graph.nodes, d => d.name);
     const node = nodeElements.enter().append('g');
-    const popularityScalar = 0.1;
     node.append('circle')
         .attr('r', d => d.popularity * popularityScalar)
         .attr('fill', defaultNodeFill)
@@ -132,8 +131,8 @@ function set_highlight(d) {
     let link = svg.selectAll('line');
 
     svg.style('cursor','pointer');
-    node.style('stroke', o => isConnected(d, o) ? '#8c564b' : defaultNodeStroke);
-    node.style('stroke-width', o => isConnected(d, o) ? highlightNodeStrokeWidth : defaultNodeStrokeWidth);
+    node.attr('r', o => isConnected(d, o) ? o.popularity * popularityScalar + 2 : o.popularity * popularityScalar)
+    node.style('stroke', o => isConnected(d, o) ? highlightNodeStoke : defaultNodeStroke);
     node.style('opacity', o => isConnected(d, o) ? 1 : highlightTransparency);
     text.style('font-weight', o => isConnected(d, o) ? highlightFontWeight : defaultFontWeight);
     text.style('opacity', o => isConnected(d, o) ? 1 : highlightTransparency);
@@ -151,8 +150,8 @@ function exit_highlight(d) {
     let link = svg.selectAll('line');
 
     svg.style('cursor','move');
+    node.attr('r', d => d.popularity * 0.1)
     node.style('stroke', defaultNodeStroke);
-    node.style('stroke-width', defaultNodeStrokeWidth);
     node.style('opacity', defaultTransparency);
     text.style('font-weight', 100);
     text.style('opacity', defaultTransparency);

@@ -5,5 +5,8 @@ Moreno To-do:
 - Don't recreate iframe if artist is already active
 - Fix height of svg to fit vh
 - Reduce width of sidebar and size of album
+- Spawn new nodes at select node if it exists
+- Click shouldn't cause node to start moving again
+- Remove iframe when active artist is removed
 - Collapsible nodes for selected artists
 - Spinny thing on 1sec timeout while iframe loads
