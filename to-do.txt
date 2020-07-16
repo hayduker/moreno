@@ -1,6 +1,5 @@
 Moreno To-do:
 
-- Fixed height and scroll on selected artists
 - Text always above nodes but nodes always hoverable
 - Don't recreate iframe if artist is already active
 - Fix height of svg to fit vh
@@ -10,3 +9,4 @@ Moreno To-do:
 - Remove iframe when active artist is removed
 - Collapsible nodes for selected artists
 - Spinny thing on 1sec timeout while iframe loads
+- Hover and click listeners on selected artists (link to nodes)

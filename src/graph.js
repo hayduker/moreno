@@ -12,6 +12,8 @@ const graph = { nodes: [], links: [] };
 const linksContainer = svg.append('g').attr('class', 'links');
 const nodesContainer = svg.append('g').attr('class', 'nodes');
 
+let activeArtist;
+
 let defaultNodeFill = "#1f77b4";
 let defaultNodeStroke = '#eee';
 let highlightNodeStoke = '#8c564b';
@@ -92,7 +94,10 @@ function start () {
 
 function click(d) {
     artistInfoName.innerText = d.name;
-    playerContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/artist/${d.uuid}" class="spotify-player" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+    if (activeArtist !== d.name) {
+        playerContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/artist/${d.uuid}" class="spotify-player" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+    }
+    activeArtist = d.name;
 }
 
 function dblclick(d) {
