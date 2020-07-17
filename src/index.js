@@ -6,6 +6,8 @@ const selectedArtistsElem = document.querySelector('.selected-artists');
 const artistInfoName = document.querySelector('.artist-info-name');
 const resetButton = document.querySelector('.reset-button');
 
+artistSearchElem.focus();
+
 // const relatedSlider = document.querySelector('.related-slider');
 
 let selectedArtists = []; // JSON.parse(localStorage.getItem('selected-artists')) || [];
