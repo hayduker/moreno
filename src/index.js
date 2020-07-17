@@ -1,10 +1,10 @@
-import { updateGraph } from './graph'
+import { updateGraph, activeArtist, playerContainer } from './graph'
 import { searchArtists, getRelatedArtists, getArtist } from './requests'
 
 const artistSearchElem = document.getElementById('artist-search');
 const selectedArtistsElem = document.querySelector('.selected-artists');
-
 const artistInfoName = document.querySelector('.artist-info-name');
+const resetButton = document.querySelector('.reset-button');
 
 // const relatedSlider = document.querySelector('.related-slider');
 
@@ -35,6 +35,7 @@ function displaySelectedArtists() {
 
             updateGraph(selectedArtistsInfo);
             displaySelectedArtists();
+            if (artist.name === activeArtist) playerContainer.parentElement.style.display = 'none';
             saveSelectedArtists();
         });
         listElem.appendChild(deleteBtn);
@@ -186,11 +187,22 @@ function autocomplete(inputElem) {
     });
 }
 
+resetButton.addEventListener('click', () => {
+    selectedArtists = [];
+    selectedArtistsInfo = {
+        nodes: [],
+        links: []
+    };
+
+    artistInfoName.parentElement.style.display = 'none';
+    resetButton.style.display = 'none';
+    displaySelectedArtists();
+    updateGraph(selectedArtistsInfo);
+});
+
 // relatedSlider.addEventListener('input', e => {
 //     maxNumRelated = +e.target.value;
 //     selectedArtists.forEach(artist => addArtistToGraphData(artist));
 // });
-
-//drawGraph();
 
 export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists, addArtistToGraphData, addArtist }
