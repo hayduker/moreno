@@ -1,5 +1,4 @@
-import { getRelatedArtists } from './requests'
-import { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists, addArtistToGraphData, addArtist } from './index'
+import { artistInfoName, selectedArtists, addArtist } from './index'
 
 const playerContainer = document.querySelector('.player-container');
 const loadingContainer = document.querySelector('.loading-container');
@@ -65,8 +64,8 @@ function start () {
         .attr('cursor', 'pointer')
         .on('dblclick', addArtist)
         .on('click', click)
-        .on("mouseover", d => set_highlight(d))
-        .on("mouseout", d => exit_highlight(d))
+        .on("mouseover", d => setHighlight(d))
+        .on("mouseout", d => exitHighlight(d))
         .call(d3.drag()
             .on('start', dragstarted)
             .on('drag', dragged)
@@ -92,7 +91,7 @@ function start () {
     simulation.force('link').links(graph.links);
     simulation.alphaTarget(0.1).restart();
 };
-
+ 
 function click(d) {
     if (activeArtist !== d.name) {
         playerContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/artist/${d.id}" class="spotify-player" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
@@ -110,7 +109,7 @@ function click(d) {
     }
 }
 
-function set_highlight(d) {
+function setHighlight(d) {
     d.fx = d.x;
     d.fy = d.y;
     findConnections();
@@ -130,7 +129,7 @@ function set_highlight(d) {
     link.style('opacity', o => o.source.index == d.index || o.target.index == d.index ? 1 : highlightTransparency);		
 }
 
-function exit_highlight(d) {
+function exitHighlight(d) {
     d.fx = null;
     d.fy = null;
 
@@ -248,4 +247,4 @@ function updateGraph(graphData) {
 
 start();
 
-export { updateGraph, activeArtist, playerContainer }
+export { updateGraph, activeArtist, playerContainer, setHighlight, exitHighlight, graph }

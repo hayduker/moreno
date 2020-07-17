@@ -1,4 +1,4 @@
-import { updateGraph, activeArtist, playerContainer } from './graph'
+import { updateGraph, activeArtist, playerContainer, setHighlight, exitHighlight, graph } from './graph'
 import { searchArtists, getRelatedArtists, getArtist } from './requests'
 
 const artistSearchElem = document.getElementById('artist-search');
@@ -24,6 +24,8 @@ function displaySelectedArtists() {
         const listElem = document.createElement('li');
         listElem.innerHTML = `<div>${artist.name}</div>`;
 
+        const nodeToHighlight = graph.nodes.find(node => node.name === artist.name);
+
         const deleteBtn = document.createElement('button');
         deleteBtn.innerHTML = '<i class="fas fa-times remove-artist"></i>';
         deleteBtn.addEventListener('click', () => {     
@@ -37,9 +39,17 @@ function displaySelectedArtists() {
             displaySelectedArtists();
             if (artist.name === activeArtist) playerContainer.parentElement.style.display = 'none';
             saveSelectedArtists();
+            
+            exitHighlight(nodeToHighlight);
         });
         listElem.appendChild(deleteBtn);
 
+        listElem.addEventListener('mouseover', () => {
+            setHighlight(nodeToHighlight);
+        });
+        listElem.addEventListener('mouseout', () => {
+            exitHighlight(nodeToHighlight);
+        });
         selectedArtistsElem.appendChild(listElem);
     })
 }
