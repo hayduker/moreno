@@ -162,7 +162,15 @@ input[type=text] {
 }
 
 .artist-info-name {
-  transform: translateY(-202px);
+  font-size: 20px;
+  font-weight: bold;
+  transform: translateY(-224px);
+  color: #333;
+  text-decoration: none;
+}
+
+.artist-info-name:hover {
+  text-decoration: underline;
 }
 
 .player-container {

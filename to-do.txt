@@ -3,7 +3,5 @@ Moreno To-do:
 - Text always above nodes but nodes always hoverable
 - Reduce width of sidebar and size of album
 - Spawn new nodes at select node if it exists
-- Click shouldn't cause node to start moving again
 - Collapsible nodes for selected artists
 - Save artists to local storage?
-- Fix delete button smush issue

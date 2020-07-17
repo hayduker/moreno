@@ -46,6 +46,8 @@ const simulation = d3.forceSimulation()
                      .force('link', d3.forceLink().id(function(d) { return d.name; }).distance(30))
                      .force('charge', d3.forceManyBody().strength(-400))
                      .force('center', d3.forceCenter(width / 2, height / 2))
+                    .force("x", d3.forceX())
+                    .force("y", d3.forceY())
                      .force("collide",
                         d3.forceCollide()
                         .radius(5)
@@ -62,7 +64,6 @@ function start () {
         .attr('stroke', '#eee')
         .attr('stroke-width', 2.0)
         .attr('cursor', 'pointer')
-        .on('dblclick', addArtist)
         .on('click', click)
         .on("mouseover", d => setHighlight(d))
         .on("mouseout", d => exitHighlight(d))
@@ -93,10 +94,15 @@ function start () {
 };
  
 function click(d) {
-    if (activeArtist !== d.name) {
+    if (d3.event.shiftKey) {
+        // Expand graph on clicked node
+        addArtist(d);
+    } else if (activeArtist !== d.name) {
+        // Display music player for clicked artist
         playerContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/artist/${d.id}" class="spotify-player" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
 
         artistInfoName.innerText = d.name;
+        artistInfoName.href = `https://open.spotify.com/artist/${d.id}`
         activeArtist = d.name;
 
         loadingContainer.style.display = 'flex';

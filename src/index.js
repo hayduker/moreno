@@ -10,12 +10,20 @@ artistSearchElem.focus();
 
 // const relatedSlider = document.querySelector('.related-slider');
 
-let selectedArtists = []; // JSON.parse(localStorage.getItem('selected-artists')) || [];
-
+let selectedArtists = [];
 let selectedArtistsInfo = {
     nodes: [],
     links: []
-};
+}
+
+// let selectedArtists = JSON.parse(localStorage.getItem('selected-artists')) || [];
+// let selectedArtistsInfo = {
+//     nodes: JSON.parse(localStorage.getItem('nodes')) || [],
+//     links: JSON.parse(localStorage.getItem('links')) || []
+// };
+
+displaySelectedArtists();
+updateGraph(selectedArtistsInfo);
 
 let maxNumRelated = 6; // relatedSlider.value;
 
@@ -43,7 +51,7 @@ function displaySelectedArtists() {
                 playerContainer.innerHTML = '';
                 playerContainer.parentElement.style.display = 'none';
             }
-            saveSelectedArtists();
+            // saveSelectedArtists();
             
             exitHighlight(nodeToHighlight);
         });
@@ -60,7 +68,9 @@ function displaySelectedArtists() {
 }
 
 function saveSelectedArtists() {
-    //localStorage.setItem('selected-artists', JSON.stringify(selectedArtists));
+    localStorage.setItem('selected-artists', JSON.stringify(selectedArtists));
+    localStorage.setItem('nodes', JSON.stringify(selectedArtistsInfo.nodes));
+    localStorage.setItem('links', JSON.stringify(selectedArtistsInfo.links));
 }
 
 autocomplete(document.getElementById('artist-search'));
@@ -149,7 +159,7 @@ function autocomplete(inputElem) {
                     dropdownItem.addEventListener('click', () => {
                         inputElem.value = '';
                         addArtist(artist);
-                        saveSelectedArtists();
+                        // saveSelectedArtists();
                         closeAllLists();
                     });
     
@@ -213,6 +223,7 @@ resetButton.addEventListener('click', () => {
     resetButton.style.display = 'none';
     displaySelectedArtists();
     updateGraph(selectedArtistsInfo);
+    // saveSelectedArtists()
 });
 
 // relatedSlider.addEventListener('input', e => {
