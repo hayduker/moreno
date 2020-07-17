@@ -37,7 +37,10 @@ function displaySelectedArtists() {
 
             updateGraph(selectedArtistsInfo);
             displaySelectedArtists();
-            if (artist.name === activeArtist) playerContainer.parentElement.style.display = 'none';
+            if (artist.name === activeArtist) {
+                playerContainer.innerHTML = '';
+                playerContainer.parentElement.style.display = 'none';
+            }
             saveSelectedArtists();
             
             exitHighlight(nodeToHighlight);
