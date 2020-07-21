@@ -3,7 +3,7 @@ import { artistInfoName, selectedArtists, addArtist } from './index'
 const playerContainer = document.querySelector('.player-container');
 const loadingContainer = document.querySelector('.loading-container');
 const instructionsContainer = document.querySelector('.instructions-container');
-const resetButton = document.querySelector('.reset-button');
+const controlsContainer = document.querySelector('.controls-container');
 const svg = d3.select('svg');
 const { width, height } = document.querySelector('#graph').getBoundingClientRect();
 
@@ -255,11 +255,11 @@ function updateGraph(graphData) {
     if (selectedArtists.length > 0) {
         instructionsContainer.style.display = 'flex';
         svg.style('cursor','move');
-        resetButton.style.display = 'block';
+        controlsContainer.style.display = 'flex';
     } else {
         instructionsContainer.style.display = 'none';
         svg.style('cursor','default');
-        resetButton.style.display = 'none;'
+        controlsContainer.style.display = 'none;'
     }
 }
 

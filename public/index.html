@@ -31,7 +31,6 @@
         </div>
 
         <div class="artist-info-container">
-            <!-- <h3 class="artist-info-name"></h3> -->
             <a class="artist-info-name"></a>
             <div class="player-container"></div>
         </div>
@@ -43,7 +42,17 @@
 
     <div class="graph-container">
         <svg id="graph" class="graph"></svg>
-        <button class="reset-button">Reset</button>
+        <div class="controls-container">
+            <div class="bubble-container">
+                <div class="bubble-main">10</div>
+                <div class="bubble-corner"></div>
+            </div>
+            <div class="slider-container">
+                <p># of related artists to show:</p>
+                <input type="range" min="1" max="20" value="6" class="num-related" id="num-related">
+            </div>
+            <button class="reset-button">Reset</button>
+        </div>
         <div class="instructions-container">
             <div class="instructions">
                 <p><b>click</b> to listen</p>

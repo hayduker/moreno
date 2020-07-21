@@ -9,6 +9,7 @@ const resetButton = document.querySelector('.reset-button');
 artistSearchElem.focus();
 
 const relatedSlider = document.querySelector('.num-related');
+const bubbleContainer = document.querySelector('.bubble-container');
 
 let selectedArtists = [];
 let selectedArtistsInfo = {
@@ -25,7 +26,9 @@ let selectedArtistsInfo = {
 displaySelectedArtists();
 updateGraph(selectedArtistsInfo);
 
-let maxNumRelated = 6; // relatedSlider.value;
+let maxNumRelated = 6;
+relatedSlider.value = maxNumRelated;
+bubbleContainer.querySelector('.bubble-main').innerHTML = maxNumRelated.toString();
 
 function displaySelectedArtists() {
     selectedArtistsElem.innerHTML = '';
@@ -233,18 +236,27 @@ resetButton.addEventListener('click', () => {
     // saveSelectedArtists()
 });
 
-// relatedSlider.addEventListener('input', e => {
-//     maxNumRelated = +e.target.value;
-//     console.log(maxNumRelated)
-//     selectedArtistsInfo = {
-//         nodes: [],
-//         links: []
-//     }
-//     selectedArtists.forEach(artist => {
-//         addArtistToGraphData(artist).then(() => {
-//             updateGraph(selectedArtistsInfo);
-//         });
-//     });
-// });
+relatedSlider.addEventListener('input', e => {
+    maxNumRelated = +e.target.value;
+    bubbleContainer.querySelector('.bubble-main').innerHTML = e.target.value;
+
+    selectedArtistsInfo = {
+        nodes: [],
+        links: []
+    }
+    selectedArtists.forEach(artist => {
+        addArtistToGraphData(artist).then(() => {
+            updateGraph(selectedArtistsInfo);
+        });
+    });
+});
+
+relatedSlider.addEventListener('mouseover', () => {
+    bubbleContainer.style.opacity = '1';
+});
+
+relatedSlider.addEventListener('mouseout', () => {
+    bubbleContainer.style.opacity = '0';
+});
 
 export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists, addArtist }
