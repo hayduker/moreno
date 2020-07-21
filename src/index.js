@@ -8,7 +8,7 @@ const resetButton = document.querySelector('.reset-button');
 
 artistSearchElem.focus();
 
-// const relatedSlider = document.querySelector('.related-slider');
+const relatedSlider = document.querySelector('.num-related');
 
 let selectedArtists = [];
 let selectedArtistsInfo = {
@@ -104,8 +104,8 @@ function addRelatedArtistsToGraphData (sourceArtist, relatedArtists) {
     });
 };
 
-function addArtistToGraphData (sourceArtist) {
-    getArtist(sourceArtist.id).then(data => {
+async function addArtistToGraphData (sourceArtist) {
+    await getArtist(sourceArtist.id).then(data => {
         if (!selectedArtistsInfo.nodes.map(node => node.name).includes(sourceArtist.name)) {
             selectedArtistsInfo.nodes.push({
                 name: sourceArtist.name,
@@ -115,19 +115,26 @@ function addArtistToGraphData (sourceArtist) {
                 group: 1
             });
         }
+    }, error => {
+        console.log('got an error from the promise:')
+        console.log(error)
     });
 
-    getRelatedArtists(sourceArtist.id).then(data => {
+    await getRelatedArtists(sourceArtist.id).then(data => {
         const relatedArtists = data.artists.splice(0, maxNumRelated);
         addRelatedArtistsToGraphData(sourceArtist, relatedArtists);
-        updateGraph(selectedArtistsInfo);
+    }, error => {
+        console.log('got an error from related promise')
+        console.log(error)
     });
 }
 
 function addArtist (sourceArtist) {
     if (!selectedArtists.map(selectedArtist => selectedArtist.name).includes(sourceArtist.name)) {
         addArtistToSelected(sourceArtist);
-        addArtistToGraphData(sourceArtist, maxNumRelated);
+        addArtistToGraphData(sourceArtist, maxNumRelated).then(() => {
+            updateGraph(selectedArtistsInfo);
+        });
     }
 }
 
@@ -228,7 +235,16 @@ resetButton.addEventListener('click', () => {
 
 // relatedSlider.addEventListener('input', e => {
 //     maxNumRelated = +e.target.value;
-//     selectedArtists.forEach(artist => addArtistToGraphData(artist));
+//     console.log(maxNumRelated)
+//     selectedArtistsInfo = {
+//         nodes: [],
+//         links: []
+//     }
+//     selectedArtists.forEach(artist => {
+//         addArtistToGraphData(artist).then(() => {
+//             updateGraph(selectedArtistsInfo);
+//         });
+//     });
 // });
 
-export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists, addArtistToGraphData, addArtist }
+export { selectedArtistsInfo, addRelatedArtistsToGraphData, addArtistToSelected, maxNumRelated, artistInfoName, selectedArtists, addArtist }

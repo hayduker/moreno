@@ -11,6 +11,7 @@ const graph = { nodes: [], links: [] };
 
 const linksContainer = svg.append('g').attr('class', 'links');
 const nodesContainer = svg.append('g').attr('class', 'nodes');
+const labelsContainer = svg.append('g').attr('class', 'labels');
 
 let activeArtist;
 
@@ -56,9 +57,9 @@ const simulation = d3.forceSimulation()
                      .on('tick', ticked);
 
 function start () {
-    const nodeElements = nodesContainer.selectAll('g').data(graph.nodes, d => d.name);
-    const node = nodeElements.enter().append('g');
-    node.append('circle')
+    const nodeElements = nodesContainer.selectAll('circle').data(graph.nodes, d => d.name);
+
+    nodeElements.enter().append('circle')
         .attr('r', d => d.popularity * popularityScalar)
         .attr('fill', defaultNodeFill)
         .attr('stroke', '#eee')
@@ -72,12 +73,17 @@ function start () {
             .on('drag', dragged)
             .on('end', dragended));
 
-    node.append('text')
+    nodeElements.exit().remove();
+
+    const labelElements = labelsContainer.selectAll('text').data(graph.nodes, d => d.name);
+
+    labelElements.enter().append('text')
         .text(d => d.name)
+        .attr('class','graph-text')
         .attr('x', d => d.popularity * popularityScalar-2)
         .attr('y', d => -d.popularity * popularityScalar+2);
 
-    nodeElements.exit().remove();
+    labelElements.exit().remove();
 
     const linkElements = linksContainer.selectAll('line').data(graph.links);
 
@@ -155,8 +161,11 @@ function exitHighlight(d) {
 }
 
 function ticked() {
-    nodesContainer.selectAll('g')
+    nodesContainer.selectAll('circle')
                   .attr('transform', d => `translate(${d.x},${d.y})`)
+
+    labelsContainer.selectAll('text')
+                   .attr('transform', d => `translate(${d.x},${d.y})`)
 
     linksContainer.selectAll('line')
                   .attr('x1', d => d.source.x)
@@ -165,12 +174,13 @@ function ticked() {
                   .attr('y2', d => d.target.y);
 }
 
-zoom.on("zoom", function() {
-    nodesContainer.attr("transform", d3.event.transform);
-    linksContainer.attr("transform", d3.event.transform);
+zoom.on('zoom', function() {
+    nodesContainer.attr('transform', d3.event.transform);
+    labelsContainer.attr('transform', d3.event.transform);
+    linksContainer.attr('transform', d3.event.transform);
 })
 
-svg.call(zoom).on("dblclick.zoom", null);
+svg.call(zoom).on('dblclick.zoom', null);
   
 
 const addNode = node => graph.nodes.push(node);
@@ -203,34 +213,36 @@ const removeLink = (source, target) => {
 };
 
 function dragstarted(d) {
-  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-  d.fx = d.x;
-  d.fy = d.y;
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
 }
 
 function dragged(d) {
-  d.fx = d3.event.x;
-  d.fy = d3.event.y;
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
 }
 
 function dragended(d) {
-  if (!d3.event.active) simulation.alphaTarget(0);
-  d.fx = null;
-  d.fy = null;
+    if (!d3.event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
 }
 
 function updateGraph(graphData) {
+    console.log('updateGraph()')
     const updatedArtists = graphData.nodes.map(artist => artist.name);
-    graph.nodes = graph.nodes.filter(node => {
-        return updatedArtists.includes(node.name);
-    });
+    graph.nodes = graph.nodes.filter(node => updatedArtists.includes(node.name));
     graphData.nodes.forEach(artist => {
         if (!graph.nodes.find(node => node.name === artist.name)) {
             addNode(createNode(artist))
         }
     });
 
+    // console.log(graph.links)
+    // console.log(graphData.links)
     graph.links = graph.links.filter(link => selectedArtists.includes(link.source.name));
+
     graphData.links.forEach(newLink => {
         if (!graph.links.find(link => link.source.name === newLink.source &&
                               link.target.name === newLink.target)) {

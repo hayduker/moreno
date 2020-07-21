@@ -303,3 +303,13 @@ input[type=text] {
   height: 100px;
   width: 100px;
 }
+
+.graph-text {
+  pointer-events: none;
+}
+
+.slider-container {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
