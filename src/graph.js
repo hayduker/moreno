@@ -4,6 +4,9 @@ const playerContainer = document.querySelector('.player-container');
 const loadingContainer = document.querySelector('.loading-container');
 const instructionsContainer = document.querySelector('.instructions-container');
 const controlsContainer = document.querySelector('.controls-container');
+const resetButton = document.querySelector('.reset-button');
+const relatedSlider = document.querySelector('.num-related');
+
 const svg = d3.select('svg');
 const { width, height } = document.querySelector('#graph').getBoundingClientRect();
 
@@ -31,6 +34,16 @@ const popularityScalar = 0.1;
 let min_zoom = 0.4;
 let max_zoom = 2;
 let zoom = d3.zoom().scaleExtent([min_zoom,max_zoom])
+
+Array.prototype.unique = function() {
+    const a = this.concat();
+    for (let i = 0; i < a.length; i++) {
+        for (let j = i + 1; j < a.length; j++) {
+            if (a[i] === a[j]) a.splice(j--, 1);
+        }
+    }
+    return a;
+};
 
 let linkedByIndex = {};
 function findConnections() {
@@ -184,32 +197,13 @@ svg.call(zoom).on('dblclick.zoom', null);
   
 
 const addNode = node => graph.nodes.push(node);
-const addLink = (source, target) => graph.links.push({source, target});
+
+const addLink = (source, target) => {
+    graph.links.push({source, target})
+};
+
 const createNode = artist => { 
     return { x: width/2, y: height/2, ...artist }
-};
-
-const removeNode = name => {
-    var i = 0;
-    var n = findNode(name);
-    while (i < links.length) {
-        if ((links[i]['source'] == n) || (links[i]['target'] == n)) {
-            links.splice(i, 1);
-        }
-        else i++;
-    }
-    nodes.splice(findNodeIndex(name), 1);
-    update();
-};
-
-const removeLink = (source, target) => {
-    for (var i = 0; i < links.length; i++) {
-        if (links[i].source.name == source && links[i].target.name == target) {
-            links.splice(i, 1);
-            break;
-        }
-    }
-    update();
 };
 
 function dragstarted(d) {
@@ -230,8 +224,8 @@ function dragended(d) {
 }
 
 function updateGraph(graphData) {
-    console.log('updateGraph()')
-    const updatedArtists = graphData.nodes.map(artist => artist.name);
+    let updatedArtists = graphData.nodes.map(artist => artist.name);
+    updatedArtists = updatedArtists.concat(selectedArtists.map(artist => artist.name)).unique();
     graph.nodes = graph.nodes.filter(node => updatedArtists.includes(node.name));
     graphData.nodes.forEach(artist => {
         if (!graph.nodes.find(node => node.name === artist.name)) {
@@ -239,9 +233,9 @@ function updateGraph(graphData) {
         }
     });
 
-    // console.log(graph.links)
-    // console.log(graphData.links)
-    graph.links = graph.links.filter(link => selectedArtists.includes(link.source.name));
+    graph.links = graph.links.filter(link => {
+        return link.source ? selectedArtists.includes(link.source.name) : true;
+    });
 
     graphData.links.forEach(newLink => {
         if (!graph.links.find(link => link.source.name === newLink.source &&
@@ -256,10 +250,14 @@ function updateGraph(graphData) {
         instructionsContainer.style.display = 'flex';
         svg.style('cursor','move');
         controlsContainer.style.display = 'flex';
+        resetButton.style.display = 'flex';
+        relatedSlider.parentElement.style.display = 'flex';
     } else {
         instructionsContainer.style.display = 'none';
         svg.style('cursor','default');
         controlsContainer.style.display = 'none;'
+        resetButton.style.display = 'none';
+        relatedSlider.parentElement.style.display = 'none';
     }
 }
 

@@ -118,17 +118,11 @@ async function addArtistToGraphData (sourceArtist) {
                 group: 1
             });
         }
-    }, error => {
-        console.log('got an error from the promise:')
-        console.log(error)
     });
 
     await getRelatedArtists(sourceArtist.id).then(data => {
         const relatedArtists = data.artists.splice(0, maxNumRelated);
         addRelatedArtistsToGraphData(sourceArtist, relatedArtists);
-    }, error => {
-        console.log('got an error from related promise')
-        console.log(error)
     });
 }
 
@@ -138,6 +132,13 @@ function addArtist (sourceArtist) {
         addArtistToGraphData(sourceArtist, maxNumRelated).then(() => {
             updateGraph(selectedArtistsInfo);
         });
+    }
+}
+
+async function addMultipleArtistsToGraphData(artists) {
+    for (let i = 0; i < artists.length; i++) {
+        let artist = artists[i];
+        await addArtistToGraphData(artist);
     }
 }
 
@@ -231,6 +232,8 @@ resetButton.addEventListener('click', () => {
 
     artistInfoName.parentElement.style.display = 'none';
     resetButton.style.display = 'none';
+    relatedSlider.parentElement.style.display = 'none';
+
     displaySelectedArtists();
     updateGraph(selectedArtistsInfo);
     // saveSelectedArtists()
@@ -244,10 +247,12 @@ relatedSlider.addEventListener('input', e => {
         nodes: [],
         links: []
     }
-    selectedArtists.forEach(artist => {
-        addArtistToGraphData(artist).then(() => {
-            updateGraph(selectedArtistsInfo);
-        });
+
+    addMultipleArtistsToGraphData(selectedArtists).then(() => {
+        // const theCopy = {...selectedArtistsInfo}
+        // console.log("about to updateGraph, here's selected artist info:")
+        // console.log(theCopy)
+        updateGraph(selectedArtistsInfo);
     });
 });
 
