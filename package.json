@@ -20,7 +20,7 @@
     "babel-polyfill": "^6.26.0",
     "live-server": "^1.2.1",
     "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.10.3"
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.1.0"
   }
 }
